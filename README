@@ -1,0 +1,35 @@
+rgbdsend
+
+
+1. Introduction
+
+rgbdsend is a program to capture short sequences of RGBD data from an OpenNI2
+compliant sensor and send them to a remote server.
+
+2. Building
+
+rgbdsend requires libcurl and OpenNI2. Install the dependencies and follow
+these steps to build it:
+
+$ mkdir build
+$ cd build
+$ . /path/to/OpenNI/OpenNIDevEnvironment
+$ cmake ..
+$ make
+
+This will create the rgbdsend executable in your current directory. To read the
+destination server information, rgbdsend needs a config file in the same
+directory as the executable. An example file is included with the source.
+
+$ mv ../config.example config
+
+3. Config File Format
+
+The Config file format is very simple. Lines beginning with # and empty lines
+are ignored. The other lines contain the configuration data in the following
+order:
+
+URL
+Username
+Password
+Capture Time [ms]
