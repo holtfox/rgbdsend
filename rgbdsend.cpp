@@ -83,6 +83,11 @@ void init_openni(openni::Device *device) {
 		printf("Couldn't open device\n%s\n", openni::OpenNI::getExtendedError());
 		exit(2);
 	}
+	
+	if(device->isImageRegistrationModeSupported(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR))	
+		device->setImageRegistrationMode(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR);
+	else
+		printf("Warning, depth to image registration not supported by device! Color values will appear shifted.\n");
 }
 
 CURL *init_curl() {
@@ -142,6 +147,22 @@ void read_config(char *filename, Config *conf) {
 	printf("Successfully read '%s'\n", filename);
 }
 
+void set_maxres(openni::VideoStream &stream) {
+	const openni::Array<openni::VideoMode> &modes = stream.getSensorInfo().getSupportedVideoModes();
+	int mode = 0;
+	int max = 0;
+	
+	for(int i = 0; i < modes.getSize(); i++) {
+		int res = modes[i].getResolutionX()*modes[i].getResolutionY()+modes[i].getFps(); // higher fps slightly prefered
+		if(res > max) {
+			max = res;
+			mode = i;
+		}
+	}
+	
+	stream.setVideoMode(modes[mode]);
+}	
+
 int main(int argc, char **argv) {
 	openni::Device device;	
 	openni::Status rc;
@@ -170,10 +191,11 @@ int main(int argc, char **argv) {
 			if(rc != openni::STATUS_OK)	{
 				printf("Couldn't start the color stream\n%s\n", openni::OpenNI::getExtendedError());
 			}
-		}
-		else {
-			printf("Couldn't create depth stream\n%s\n", openni::OpenNI::getExtendedError());
-		}
+		}		
+	} else {
+		printf("Couldn't create depth stream\n%s\n", openni::OpenNI::getExtendedError());
+		
+		exit(1);
 	}
 
 	if(device.getSensorInfo(openni::SENSOR_COLOR) != NULL) {
@@ -183,12 +205,15 @@ int main(int argc, char **argv) {
 			if(rc != openni::STATUS_OK)	{
 				printf("Couldn't start the color stream\n%s\n", openni::OpenNI::getExtendedError());
 			}
-		}
-		else {
-			printf("Couldn't create color stream\n%s\n", openni::OpenNI::getExtendedError());
-		}
+		}		
+	} else {
+		printf("Couldn't create color stream\n%s\n", openni::OpenNI::getExtendedError());
+		exit(1);
 	}
 
+	set_maxres(depth);
+	set_maxres(color);
+	
 	char tmpfile[256];	
 	
 	while(1) {
