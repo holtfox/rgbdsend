@@ -232,8 +232,8 @@ int main(int argc, char **argv) {
 		time_t t;
 		t = time(NULL);
 		
-		strftime(tmpfile, sizeof(tmpfile), "rgbd_%Y%m%d_%H-%M.oni", localtime(&t));
-		printf("%s", tmpfile);
+		strftime(tmpfile, sizeof(tmpfile), "rgbd_%Y%m%d_%H-%M-%S.oni", localtime(&t));
+		printf("%s\n", tmpfile);
 		recorder.create(tmpfile);
 		recorder.attach(color);
 		recorder.attach(depth);		
