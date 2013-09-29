@@ -187,6 +187,8 @@ int main(int argc, char **argv) {
 	if(device.getSensorInfo(openni::SENSOR_DEPTH) != NULL) {
 		rc = depth.create(device, openni::SENSOR_DEPTH);
 		if(rc == openni::STATUS_OK)	{
+			set_maxres(depth);
+			
 			rc = depth.start();
 			if(rc != openni::STATUS_OK)	{
 				printf("Couldn't start the color stream\n%s\n", openni::OpenNI::getExtendedError());
@@ -201,6 +203,8 @@ int main(int argc, char **argv) {
 	if(device.getSensorInfo(openni::SENSOR_COLOR) != NULL) {
 		rc = color.create(device, openni::SENSOR_COLOR);
 		if(rc == openni::STATUS_OK)	{
+			set_maxres(color);
+			
 			rc = color.start();
 			if(rc != openni::STATUS_OK)	{
 				printf("Couldn't start the color stream\n%s\n", openni::OpenNI::getExtendedError());
@@ -211,8 +215,6 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
-	set_maxres(depth);
-	set_maxres(color);
 	
 	char tmpfile[256];	
 	
