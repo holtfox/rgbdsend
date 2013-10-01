@@ -85,14 +85,16 @@ void read_frame(openni::VideoFrameRef &frame, RawData &data) {
 		depthpix = (openni::DepthPixel*)frame.getData();
 		for(y = 0; y < data.dresy; y++) {
 			for(x = 0; x < data.dresx; x++) {
-				float curavg = data.d[x+data.dresx*y]/(float)data.dframenums[x+data.dresx*y];
+				int idx = x+data.dresx*y;
 				
-				if(depthpix[x+data.dresx*y] == 0)
+				float curavg = data.d[idx]/(float)data.dframenums[idx];
+				
+				if(depthpix[idx] == 0)
 					continue;
 				
-				if(data.d[x+data.dresx*y] == 0 || fabs(curavg-depthpix[x+data.dresx*y]) < rgbdsend::depth_averaging_threshold) {
-					data.d[x+data.dresx*y] += depthpix[x+data.dresx*y];
-					data.dframenums[x+data.dresx*y]++;
+				if(data.d[idx] == 0 || fabs(curavg-depthpix[idx]) < rgbdsend::depth_averaging_threshold) {
+					data.d[idx] += depthpix[idx];
+					data.dframenums[idx]++;
 				}		
 				
 			}
@@ -102,10 +104,11 @@ void read_frame(openni::VideoFrameRef &frame, RawData &data) {
 		clrpix = (openni::RGB888Pixel*)frame.getData();
 		for(y = 0; y < data.cresy; y++) {
 			for(x = 0; x < data.cresx; x++) {
+				int idx = x+data.cresx*y;
+				
 				data.r[x+data.cresx*y] += clrpix[x+data.cresx*y].r;
 				data.g[x+data.cresx*y] += clrpix[x+data.cresx*y].g;
-				data.b[x+data.cresx*y] += clrpix[x+data.cresx*y].b;		
-				
+				data.b[x+data.cresx*y] += clrpix[x+data.cresx*y].b;			
 				
 			}
 		}
