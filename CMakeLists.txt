@@ -11,6 +11,9 @@ find_library(OPENNI2_LIBRARIES NAMES OpenNI2
 
 set(SRCS
          rgbdsend.cpp
+         pointcloud.cpp
+         capture.cpp
+         sendfile.cpp
 )
 
 include_directories(${CURL_INCLUDE_DIR} ${OPENNI2_INCLUDE_DIR})
