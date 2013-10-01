@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
 			break;
 		
 		time_t t = time(NULL);
-		strftime(tmpfile, sizeof(tmpfile), "rgbd_%Y%m%d_%H-%M-%S.oni", localtime(&t));
+		strftime(tmpfile, sizeof(tmpfile), "rgbd_%Y%m%d_%H-%M-%S.ply", localtime(&t));
 		
 		RawData raw(depth.getVideoMode().getResolutionX(), depth.getVideoMode().getResolutionY(),
 					color.getVideoMode().getResolutionX(), color.getVideoMode().getResolutionY());
