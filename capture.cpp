@@ -135,12 +135,11 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int t
 	
 	while(1) {
 		int abort = 1;
-		printf("\r");
+		printf("\rframes left: ");
 		for(int i = 0; i < streamcount; i++) {
 			abort = (abort && framestotake[i] == 0);
 			printf("%d ", framestotake[i]);
 		}
-		printf("frames left.");
 		
 		if(abort)
 			break;
@@ -156,6 +155,11 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int t
 			streams[readyStream]->readFrame(&frame);
 			framestotake[readyStream]--;
 			read_frame(frame, raw);
+			
+			if(framestotake[readyStream] == 0) {
+				streams[readyStream] = streams[streamcount-1];
+				streamcount--;
+			}			
 		}
 	}
 	
