@@ -157,8 +157,9 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int t
 			read_frame(frame, raw);
 			
 			if(framestotake[readyStream] == 0) {
-				streams[readyStream] = streams[streamcount-1];
 				streamcount--;
+				streams[readyStream] = streams[streamcount-1];
+				framestotake[readyStream] = framestotake[streamcount-1];				
 			}			
 		}
 	}
