@@ -18,7 +18,7 @@ struct Config {
 	char *username;
 	char *password;
 	
-	int capture_time; // in clocks
+	int capture_frames;
 };
 
 void read_config(char *filename, Config *conf) {
@@ -55,7 +55,7 @@ void read_config(char *filename, Config *conf) {
 			conf->password[buflen-1] = '\0';
 			break;
 		case 3: // Record 
-			conf->capture_time = CLOCKS_PER_SEC*atoi(buf)/1000;
+			conf->capture_frames = atoi(buf);
 			break;
 		}
 		
@@ -130,7 +130,8 @@ int main(int argc, char **argv) {
 		printf("Recording started.\n");
 		
 		openni::VideoStream* streams[] = {&depth, &color};
-		capture(streams, 2, raw, conf.capture_time);
+		int framecounts[] = {conf.capture_frames, conf.capture_frames/10};
+		capture(streams, 2, raw, framecounts);
 			
 		printf("Recording ended.\n");
 		
