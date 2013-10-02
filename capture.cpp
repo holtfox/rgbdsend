@@ -41,21 +41,21 @@ RawData::~RawData() {
 void init_openni(openni::Device *device) {
 	openni::Status rc = openni::OpenNI::initialize();
 	if(rc != openni::STATUS_OK)	{
-		printf("Initialize failed\n%s\n", openni::OpenNI::getExtendedError());
+		printf("OpenNI: Initialize failed\n%s", openni::OpenNI::getExtendedError());
 		exit(1);
 	}
 
 	
 	rc = device->open(openni::ANY_DEVICE);
 	if(rc != openni::STATUS_OK) {
-		printf("Couldn't open device\n%s\n", openni::OpenNI::getExtendedError());
+		printf("OpenNI: Couldn't open device\n%s", openni::OpenNI::getExtendedError());
 		exit(2);
 	}
 	
 	if(device->isImageRegistrationModeSupported(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR))	
 		device->setImageRegistrationMode(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR);
 	else
-		printf("Warning, depth to image registration not supported by device! Color values will appear shifted.\n");
+		printf("OpenNI Warning: depth to image registration not supported by device!\nColor values will appear shifted.\n");
 }
 
 void set_maxres(openni::VideoStream &stream) {
@@ -161,12 +161,6 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int *
 	int sc = streamcount;
 	
 	while(sc) {
-		int abort = 1;
-		printf("\rframes left: ");
-		for(int i = 0; i < sc; i++) {
-			printf("%d ", framestotake[i]);
-		}
-		
 		int readyStream = -1;
 		rc = openni::OpenNI::waitForAnyStream(streams, sc, &readyStream, rgbdsend::read_wait_timeout);
 		if (rc != openni::STATUS_OK) {
@@ -186,9 +180,13 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int *
 				printf("\n");
 			}			
 		}
+		
+		printf("\rframes left: ");
+		for(int i = 0; i < sc; i++)
+			printf("%d ", framestotake[i]);	
 	}
 	
 	for(int i = 0; i < streamcount; i++)
 		streams[i]->stop();
-	printf("\n");
+	printf("\n");	
 }

@@ -1,8 +1,21 @@
-# URL
-ftp://someserver/somedir
-# Username
-test
-# Password
-s3cr3t
-# Capture frames
-60
+# This is an example config file. It contains all possible configuration
+# options. They aren't required however. Missing options are replaced by their
+# builtin presets.
+
+[Destination]
+# The destination section specifies the access data to a destination server.
+# The finished point clouds will be uploaded to this server. All protocols
+# supported by libcurl are possible to use.
+
+url sftp://localhost/~/
+username rgbd
+password s3cr3t
+
+[Capture]
+# The following two integers set the amount of raw frames to be captured.
+# rgbdsend then forms an average over them to smooth the sensor measurements.
+# Generally, the depth frame count should be higher because the depth field
+# needs to have much higher precision than the colors.
+
+color_framecount 6
+depth_framecount 60

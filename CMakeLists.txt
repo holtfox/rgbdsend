@@ -14,6 +14,7 @@ set(SRCS
          pointcloud.cpp
          capture.cpp
          sendfile.cpp
+         config.cpp
 )
 
 include_directories(${CURL_INCLUDE_DIR} ${OPENNI2_INCLUDE_DIR})

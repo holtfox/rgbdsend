@@ -10,68 +10,8 @@
 #include "capture.h"
 #include "pointcloud.h"
 #include "sendfile.h"
+#include "config.h"
 
-
-struct Config {
-	char *url;
-	
-	char *username;
-	char *password;
-	
-	int capture_frames;
-};
-
-void read_config(char *filename, Config *conf) {
-	char buf[512];
-	int line = 0;
-	int buflen;
-	
-	FILE *cfgfile = fopen(filename, "r");
-	if(cfgfile == NULL) {
-		printf("Config Error: '%s': %s.\n", filename, strerror(errno));
-		exit(3);
-	}
-		
-	while(fgets(buf, sizeof(buf), cfgfile)) {
-		if(buf[0] == '#' || buf[0] == '\n')
-			continue;
-		
-		buflen = strlen(buf);
-		
-		switch(line) {
-		case 0: // URL
-			conf->url = new char[buflen];
-			strncpy(conf->url, buf, buflen);
-			conf->url[buflen-1] = '\0';
-			break;
-		case 1: // Username
-			conf->username = new char[buflen];
-			strncpy(conf->username, buf, buflen);
-			conf->username[buflen-1] = '\0';
-			break;
-		case 2: // Password
-			conf->password = new char[buflen];
-			strncpy(conf->password, buf, buflen);
-			conf->password[buflen-1] = '\0';
-			break;
-		case 3: // Record 
-			conf->capture_frames = atoi(buf);
-			break;
-		}
-		
-		line++;
-	}
-	
-	if(line != 4) {
-		printf("Config Error: Wrong config file format in '%s'. Must fit the following:"
-			"\n\nTargetURL\nUsername\nPassword\nCaptureTime [ms]\n\n(lines beginning with # are ignored)\n", filename);
-		exit(3);
-	}
-		
-	fclose(cfgfile);
-	
-	printf("Successfully read '%s'\n", filename);
-}
 
 int main(int argc, char **argv) {
 	openni::Device device;	
@@ -84,9 +24,11 @@ int main(int argc, char **argv) {
 	strcpy(cfgfile+(prefix-argv[0]), rgbdsend::config_file_name);
 		
 	Config conf;
-	
-	read_config(cfgfile, &conf);
-	
+	if(conf.read(cfgfile) != 1) {
+		printf("Config: Falling back to builtin presets.\n");
+		conf.setDefaults();
+	}
+		
 	delete[] cfgfile;
 		
 	init_openni(&device);
@@ -98,7 +40,7 @@ int main(int argc, char **argv) {
 		depth.create(device, openni::SENSOR_DEPTH);
 		set_maxres(depth);				
 	} else {
-		printf("Couldn't create depth stream\n%s\n", openni::OpenNI::getExtendedError());		
+		printf("OpenNI: Couldn't create depth stream\n%s", openni::OpenNI::getExtendedError());		
 		exit(1);
 	}
 
@@ -106,7 +48,7 @@ int main(int argc, char **argv) {
 		color.create(device, openni::SENSOR_COLOR);
 		set_closestres(color, depth.getVideoMode());			
 	} else {
-		printf("Couldn't create color stream\n%s\n", openni::OpenNI::getExtendedError());
+		printf("OpenNI: Couldn't create color stream\n%s", openni::OpenNI::getExtendedError());
 		exit(1);
 	}
 
@@ -130,7 +72,7 @@ int main(int argc, char **argv) {
 		printf("Recording started.\n");
 		
 		openni::VideoStream* streams[] = {&depth, &color};
-		int framecounts[] = {conf.capture_frames, conf.capture_frames/10};
+		int framecounts[] = {conf.capture_depth_frames, conf.capture_color_frames};
 		capture(streams, 2, raw, framecounts);
 			
 		printf("Recording ended.\n");
@@ -142,7 +84,10 @@ int main(int argc, char **argv) {
 		
 		printf("\nExtracted to point cloud: %s\n", tmpfile);
 		
-		send_file(curl, tmpfile, conf.url, conf.username, conf.password);
+		if(conf.dest_url && conf.dest_username && conf.dest_password)
+			send_file(curl, tmpfile, conf.dest_url, conf.dest_username, conf.dest_password);
+		else
+			printf("No destination server specified. Skipping transfer.\n");
 	}
 	
 	
@@ -150,8 +95,4 @@ int main(int argc, char **argv) {
 	color.destroy();
 	device.close();
 	openni::OpenNI::shutdown();
-	
-	delete[] conf.url;
-	delete[] conf.username;
-	delete[] conf.password;
 }

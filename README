@@ -1,12 +1,14 @@
 rgbdsend
 
 
-1. Introduction
+1 Introduction
 
 rgbdsend is a program to capture short sequences of RGBD data from an OpenNI2
-compliant sensor and send them to a remote server.
+compliant sensor, convert them to a point cloud and send them to a remote server.
 
-2. Building
+
+
+2 Building
 
 rgbdsend requires libcurl and OpenNI2. Install the dependencies and follow
 these steps to build it:
@@ -23,13 +25,37 @@ directory as the executable. An example file is included with the source.
 
 $ mv ../config.example config
 
-3. Config File Format
 
-The Config file format is very simple. Lines beginning with # and empty lines
-are ignored. The other lines contain the configuration data in the following
-order:
 
-URL
-Username
-Password
-Capture Time [ms]
+3 Config File Format
+
+The Config file format is ini-style. Lines beginning with # and empty lines are
+ignored.
+
+The other lines may contain either a section declaration (3.1) or a key/value
+pair (3.2).
+
+See config.cpp and config.example for possible options.
+
+
+3.1 Sections
+
+A section declaration has the form
+	
+	[Section]
+	
+Where "Section" is the section name. A section declaration initiates a section.
+A section ends when a new section is initiated or the file ends. Every section
+defines a set of keys and values.
+
+
+3.2 Key/value pairs
+
+A key/value pair has the form
+
+	key value
+
+where "key" is the name of the config option seperated by a single space from
+"value" which is the value of that option. A key/value pair may only appear
+inside a Section it is defined in. There may be no key/value pairs without a
+section.
