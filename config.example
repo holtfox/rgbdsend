@@ -4,5 +4,5 @@ ftp://someserver/somedir
 test
 # Password
 s3cr3t
-# Capture time [ms]
+# Capture frames
 60

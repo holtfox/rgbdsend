@@ -104,20 +104,20 @@ int main(int argc, char **argv) {
 
 	if(device.getSensorInfo(openni::SENSOR_COLOR) != NULL) {
 		color.create(device, openni::SENSOR_COLOR);
-		set_maxres(color);				
+		set_closestres(color, depth.getVideoMode());			
 	} else {
 		printf("Couldn't create color stream\n%s\n", openni::OpenNI::getExtendedError());
 		exit(1);
 	}
 
+	printf("Resolution:\nDepth: %dx%d @ %d fps\nColor: %dx%d @ %d fps\n",
+		   depth.getVideoMode().getResolutionX(), depth.getVideoMode().getResolutionY(), depth.getVideoMode().getFps(),
+		   color.getVideoMode().getResolutionX(), color.getVideoMode().getResolutionY(), color.getVideoMode().getFps());
 	
 	char tmpfile[256];	
 	
-	while(1) {
-		
+	while(1) {		
 		printf("Press Enter to record and send a segment (q to quit): ");
-		
-		fflush(stdin);
 		if(getc(stdin) == 'q')
 			break;
 		

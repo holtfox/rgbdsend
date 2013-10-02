@@ -64,8 +64,33 @@ void set_maxres(openni::VideoStream &stream) {
 	int max = 0;
 	
 	for(int i = 0; i < modes.getSize(); i++) {
-		int res = modes[i].getResolutionX()*modes[i].getResolutionY()+modes[i].getFps(); // higher fps slightly prefered
-		if(res > max) {
+		int res = modes[i].getResolutionX()*modes[i].getResolutionY()+modes[i].getFps(); // lower fps slightly prefered
+		if(res > max && (modes[i].getPixelFormat() == openni::PIXEL_FORMAT_DEPTH_100_UM // we don't want yuv422.
+			|| modes[i].getPixelFormat() == openni::PIXEL_FORMAT_DEPTH_1_MM
+			|| modes[i].getPixelFormat() == openni::PIXEL_FORMAT_RGB888)) {
+			max = res;
+			mode = i;
+		}
+	}
+	
+	stream.setVideoMode(modes[mode]);
+}
+
+void set_closestres(openni::VideoStream &stream, const openni::VideoMode &target) {
+	const openni::Array<openni::VideoMode> &modes = stream.getSensorInfo().getSupportedVideoModes();
+	int mode = 0;
+	int max = 0;
+	
+	for(int i = 0; i < modes.getSize(); i++) {
+		int dx = target.getResolutionX()-modes[i].getResolutionX();
+		dx *= dx;
+		int dy = target.getResolutionY()-modes[i].getResolutionY();
+		dy *= dy;
+		
+		int res = dx+dy+modes[i].getFps(); // higher fps slightly prefered
+		if(res > max && (modes[i].getPixelFormat() == openni::PIXEL_FORMAT_DEPTH_100_UM // we don't want yuv422.
+			|| modes[i].getPixelFormat() == openni::PIXEL_FORMAT_DEPTH_1_MM
+			|| modes[i].getPixelFormat() == openni::PIXEL_FORMAT_RGB888)) {
 			max = res;
 			mode = i;
 		}

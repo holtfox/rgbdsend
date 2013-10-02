@@ -33,6 +33,7 @@ public:
 
 void init_openni(openni::Device *device);
 void set_maxres(openni::VideoStream &stream);
+void set_closestres(openni::VideoStream &stream, const openni::VideoMode &target);
 void read_frame(openni::VideoFrameRef &frame, RawData &data);
 
 void capture(openni::VideoStream **streams, int streamcount, RawData &data, int *framecounts);
