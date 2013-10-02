@@ -133,16 +133,12 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int t
 		printf("take %d frames from stream %d\n", framestotake[i], i);
 	}
 	
-	while(1) {
+	while(streamcount) {
 		int abort = 1;
 		printf("\rframes left: ");
 		for(int i = 0; i < streamcount; i++) {
-			abort = (abort && framestotake[i] == 0);
 			printf("%d ", framestotake[i]);
 		}
-		
-		if(abort)
-			break;
 		
 		int readyStream = -1;
 		rc = openni::OpenNI::waitForAnyStream(streams, streamcount, &readyStream, rgbdsend::read_wait_timeout);
@@ -158,8 +154,9 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int t
 			
 			if(framestotake[readyStream] == 0) {
 				streamcount--;
-				streams[readyStream] = streams[streamcount-1];
-				framestotake[readyStream] = framestotake[streamcount-1];				
+				streams[readyStream] = streams[streamcount];
+				framestotake[readyStream] = framestotake[streamcount];
+				printf("\n");
 			}			
 		}
 	}
