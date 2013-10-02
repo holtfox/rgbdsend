@@ -138,9 +138,9 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int t
 		printf("\r");
 		for(int i = 0; i < streamcount; i++) {
 			abort = (abort && framestotake[i] == 0);
-			print("%d ", framestotake[i]);
+			printf("%d ", framestotake[i]);
 		}
-		print("frames left.");
+		printf("frames left.");
 		
 		if(abort)
 			break;
