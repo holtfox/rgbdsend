@@ -129,7 +129,6 @@ int main(int argc, char **argv) {
 	char tmpfile[256];	
 	
 	while(1) {
-		int starttime;
 		
 		printf("Press Enter to record and send a segment (q to quit): ");
 		
@@ -142,36 +141,11 @@ int main(int argc, char **argv) {
 		
 		RawData raw(depth.getVideoMode().getResolutionX(), depth.getVideoMode().getResolutionY(),
 					color.getVideoMode().getResolutionX(), color.getVideoMode().getResolutionY());
-		
-		openni::VideoFrameRef frame;
-		openni::VideoStream* streams[] = {&depth, &color};
-		
-		starttime = clock();
-		printf("Recording started.\n");
 				
-		while(clock() - starttime < conf.capture_time) {
-			int readyStream = -1;
-			rc = openni::OpenNI::waitForAnyStream(streams, 2, &readyStream, rgbdsend::read_wait_timeout);
-			if (rc != openni::STATUS_OK) {
-				printf("Recording timed out.\n");
-				break;
-			}
-
-			switch (readyStream) {
-			case 0:
-				// Depth
-				depth.readFrame(&frame);
-				break;
-			case 1:
-				// Color
-				color.readFrame(&frame);
-				break;
-			default:
-				printf("Unexpected stream\n");
-			}	
-			
-			read_frame(frame, raw);
-		}
+		printf("Recording started.\n");
+		
+		openni::VideoStream* streams[] = {&depth, &color};
+		capture(streams, 2, raw, conf.capture_time);
 			
 		printf("Recording ended.\n");
 		

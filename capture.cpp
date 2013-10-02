@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <OpenNI.h>
 #include <cmath>
+#include <ctime>
 
 #include "capture.h"
 #include "rgbdsend.h"
@@ -106,9 +107,9 @@ void read_frame(openni::VideoFrameRef &frame, RawData &data) {
 			for(x = 0; x < data.cresx; x++) {
 				int idx = x+data.cresx*y;
 				
-				data.r[x+data.cresx*y] += clrpix[x+data.cresx*y].r;
-				data.g[x+data.cresx*y] += clrpix[x+data.cresx*y].g;
-				data.b[x+data.cresx*y] += clrpix[x+data.cresx*y].b;			
+				data.r[idx] += clrpix[idx].r;
+				data.g[idx] += clrpix[idx].g;
+				data.b[idx] += clrpix[idx].b;			
 				
 			}
 		}
@@ -118,4 +119,39 @@ void read_frame(openni::VideoFrameRef &frame, RawData &data) {
 	default:
 		printf("Unknown format\n");
 	}	
+}
+
+void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int time) {
+	openni::VideoFrameRef frame;
+	openni::Status rc;
+	
+	int starttime = clock();
+	int *framestotake = new int[streamcount];
+	
+	for(int i = 0; i < streamcount; i++) {
+		framestotake[i] = time/CLOCKS_PER_SEC*streams[i]->getVideoMode().getFps();
+		printf("take %d frames from stream %d\n", framestotake[i], i);
+	}	
+	
+	while(1) {
+		int abort = 1;
+		for(int i = 0; i < streamcount; i++)
+			abort = (abort && framestotake == 0);
+		
+		if(abort)
+			break;
+		
+		int readyStream = -1;
+		rc = openni::OpenNI::waitForAnyStream(streams, streamcount, &readyStream, rgbdsend::read_wait_timeout);
+		if (rc != openni::STATUS_OK) {
+			printf("Recording timed out.\n");
+			break;
+		}
+
+		if(framestotake[readyStream] > 0) {
+			streams[readyStream]->readFrame(&frame);
+			framestotake[readyStream]--;
+			read_frame(frame, raw);
+		}
+	}
 }

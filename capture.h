@@ -35,4 +35,6 @@ void init_openni(openni::Device *device);
 void set_maxres(openni::VideoStream &stream);
 void read_frame(openni::VideoFrameRef &frame, RawData &data);
 
+void capture(openni::VideoStream **streams, int streamcount, RawData &data, int time);
+
 #endif

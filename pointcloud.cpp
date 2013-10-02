@@ -52,9 +52,11 @@ void depth_to_pointcloud(PointCloud &cloud, RawData &raw, openni::VideoStream &d
 			if(cy >= raw.cresy)
 				cy--;
 			
-			cloud.r[i] = raw.r[cx+cy*raw.cresx]/(float)raw.cframenum;
-			cloud.g[i] = raw.g[cx+cy*raw.cresx]/(float)raw.cframenum;
-			cloud.b[i] = raw.b[cx+cy*raw.cresx]/(float)raw.cframenum;
+			int cidx = cx+cy*raw.cresx;
+			
+			cloud.r[i] = raw.r[cidx]/(float)raw.cframenum;
+			cloud.g[i] = raw.g[cidx]/(float)raw.cframenum;
+			cloud.b[i] = raw.b[cidx]/(float)raw.cframenum;
 			i++;
 			
 // 			cloud.z[i]*=-1;
