@@ -135,8 +135,12 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int t
 	
 	while(1) {
 		int abort = 1;
-		for(int i = 0; i < streamcount; i++)
+		printf("\r");
+		for(int i = 0; i < streamcount; i++) {
 			abort = (abort && framestotake[i] == 0);
+			print("%d ", framestotake[i]);
+		}
+		print("frames left.");
 		
 		if(abort)
 			break;
@@ -144,7 +148,7 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int t
 		int readyStream = -1;
 		rc = openni::OpenNI::waitForAnyStream(streams, streamcount, &readyStream, rgbdsend::read_wait_timeout);
 		if (rc != openni::STATUS_OK) {
-			printf("Recording timed out.\n");
+			printf("\nRecording timed out.\n");
 			break;
 		}
 
@@ -154,4 +158,6 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int t
 			read_frame(frame, raw);
 		}
 	}
+	
+	printf("\n");
 }
