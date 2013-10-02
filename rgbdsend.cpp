@@ -95,31 +95,16 @@ int main(int argc, char **argv) {
 	openni::VideoStream depth, color;
 		
 	if(device.getSensorInfo(openni::SENSOR_DEPTH) != NULL) {
-		rc = depth.create(device, openni::SENSOR_DEPTH);
-		if(rc == openni::STATUS_OK)	{
-			set_maxres(depth);
-			
-			rc = depth.start();
-			if(rc != openni::STATUS_OK)	{
-				printf("Couldn't start the color stream\n%s\n", openni::OpenNI::getExtendedError());
-			}
-		}		
+		depth.create(device, openni::SENSOR_DEPTH);
+		set_maxres(depth);				
 	} else {
-		printf("Couldn't create depth stream\n%s\n", openni::OpenNI::getExtendedError());
-		
+		printf("Couldn't create depth stream\n%s\n", openni::OpenNI::getExtendedError());		
 		exit(1);
 	}
 
 	if(device.getSensorInfo(openni::SENSOR_COLOR) != NULL) {
-		rc = color.create(device, openni::SENSOR_COLOR);
-		if(rc == openni::STATUS_OK)	{
-			set_maxres(color);
-			
-			rc = color.start();
-			if(rc != openni::STATUS_OK)	{
-				printf("Couldn't start the color stream\n%s\n", openni::OpenNI::getExtendedError());
-			}
-		}		
+		color.create(device, openni::SENSOR_COLOR);
+		set_maxres(color);				
 	} else {
 		printf("Couldn't create color stream\n%s\n", openni::OpenNI::getExtendedError());
 		exit(1);
@@ -160,8 +145,6 @@ int main(int argc, char **argv) {
 	}
 	
 	
-	depth.stop();
-	color.stop();
 	depth.destroy();
 	color.destroy();
 	device.close();

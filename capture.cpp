@@ -129,6 +129,7 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int t
 	int *framestotake = new int[streamcount];
 	
 	for(int i = 0; i < streamcount; i++) {
+		streams[i]->start();		
 		framestotake[i] = time/CLOCKS_PER_SEC*streams[i]->getVideoMode().getFps();
 		printf("take %d frames from stream %d\n", framestotake[i], i);
 	}
@@ -161,5 +162,7 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int t
 		}
 	}
 	
+	for(int i = 0; i < streamcount; i++)
+		streams[i]->stop();
 	printf("\n");
 }
