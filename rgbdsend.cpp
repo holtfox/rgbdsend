@@ -31,27 +31,12 @@ int main(int argc, char **argv) {
 		
 	delete[] cfgfile;
 		
-	init_openni(&device);
 	CURL *curl = init_curl();
 	
 	openni::VideoStream depth, color;
-		
-	if(device.getSensorInfo(openni::SENSOR_DEPTH) != NULL) {
-		depth.create(device, openni::SENSOR_DEPTH);
-		set_maxres(depth);				
-	} else {
-		printf("OpenNI: Couldn't create depth stream\n%s", openni::OpenNI::getExtendedError());		
-		exit(1);
-	}
-
-	if(device.getSensorInfo(openni::SENSOR_COLOR) != NULL) {
-		color.create(device, openni::SENSOR_COLOR);
-		set_closestres(color, depth.getVideoMode());			
-	} else {
-		printf("OpenNI: Couldn't create color stream\n%s", openni::OpenNI::getExtendedError());
-		exit(1);
-	}
-
+	
+	init_openni(&device, &depth, &color);
+	
 	printf("Resolution:\nDepth: %dx%d @ %d fps\nColor: %dx%d @ %d fps\n",
 		   depth.getVideoMode().getResolutionX(), depth.getVideoMode().getResolutionY(), depth.getVideoMode().getFps(),
 		   color.getVideoMode().getResolutionX(), color.getVideoMode().getResolutionY(), color.getVideoMode().getFps());
@@ -90,9 +75,6 @@ int main(int argc, char **argv) {
 			printf("No destination server specified. Skipping transfer.\n");
 	}
 	
-	
-	depth.destroy();
-	color.destroy();
-	device.close();
-	openni::OpenNI::shutdown();
+	cleanup_curl(curl);
+	cleanup_openni(device, depth, color);
 }

@@ -31,11 +31,12 @@ public:
 	int cframenum;	
 };
 
-void init_openni(openni::Device *device);
+void init_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color);
 void set_maxres(openni::VideoStream &stream);
 void set_closestres(openni::VideoStream &stream, const openni::VideoMode &target);
 void read_frame(openni::VideoFrameRef &frame, RawData &data);
-
 void capture(openni::VideoStream **streams, int streamcount, RawData &data, int *framecounts);
+
+void cleanup_openni(openni::Device &device, openni::VideoStream &depth, openni::VideoStream &color);
 
 #endif

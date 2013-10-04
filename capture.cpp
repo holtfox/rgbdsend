@@ -38,13 +38,12 @@ RawData::~RawData() {
 	delete[] this->dframenums;
 }
 
-void init_openni(openni::Device *device) {
+void init_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color) {
 	openni::Status rc = openni::OpenNI::initialize();
 	if(rc != openni::STATUS_OK)	{
 		printf("OpenNI: Initialize failed\n%s", openni::OpenNI::getExtendedError());
 		exit(1);
 	}
-
 	
 	rc = device->open(openni::ANY_DEVICE);
 	if(rc != openni::STATUS_OK) {
@@ -56,6 +55,22 @@ void init_openni(openni::Device *device) {
 		device->setImageRegistrationMode(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR);
 	else
 		printf("OpenNI Warning: depth to image registration not supported by device!\nColor values will appear shifted.\n");
+	
+	if(device->getSensorInfo(openni::SENSOR_DEPTH) != NULL) {
+		depth->create(*device, openni::SENSOR_DEPTH);
+		set_maxres(*depth);				
+	} else {
+		printf("OpenNI: Couldn't create depth stream\n%s", openni::OpenNI::getExtendedError());		
+		exit(1);
+	}
+
+	if(device->getSensorInfo(openni::SENSOR_COLOR) != NULL) {
+		color->create(*device, openni::SENSOR_COLOR);
+		set_closestres(*color, depth->getVideoMode());			
+	} else {
+		printf("OpenNI: Couldn't create color stream\n%s", openni::OpenNI::getExtendedError());
+		exit(1);
+	}
 }
 
 void set_maxres(openni::VideoStream &stream) {
@@ -188,4 +203,11 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int *
 			printf("%d ", framestotake[i]);	
 	}
 	printf("\n");	
+}
+
+void cleanup_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color) {
+	depth.destroy();
+	color.destroy();
+	device.close();
+	openni::OpenNI::shutdown();
 }

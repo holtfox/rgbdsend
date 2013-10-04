@@ -5,6 +5,6 @@
 
 CURL *init_curl(void);
 void send_file(CURL *curl, char *filename, char *url, char *user, char *password);
-void curl_cleanup(CURL *curl);
+void cleanup_curl(CURL *curl);
 
 #endif
