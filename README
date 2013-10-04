@@ -4,7 +4,8 @@ rgbdsend
 1 Introduction
 
 rgbdsend is a program to capture short sequences of RGBD data from an OpenNI2
-compliant sensor, convert them to a point cloud and send them to a remote server.
+compliant sensor, convert them to a point cloud and send them to a remote
+server on command.
 
 
 
@@ -59,3 +60,73 @@ where "key" is the name of the config option seperated by a single space from
 "value" which is the value of that option. A key/value pair may only appear
 inside a Section it is defined in. There may be no key/value pairs without a
 section.
+
+
+
+4 Protocol
+
+rgbdsend acts like a daemon and can be controlled remotely over a network. It
+listens for TCP connections on the port specified in the configuration file.
+From here on, rgbdsend will be adressed as "server" and the remote controlling
+programm as "client". The "destination server" is the server the finished point
+clouds are sent to as set in the configuration file.
+The protocol consists of commands that are sent between server and client.
+A command contains command header (4.1) that can but doesn't need to be followed
+by a block of data (4.2). Commands may only be sent in a session as described
+below.
+
+In the following section "[command header]" refers to the command containing the
+header [command header] (4.1.1).
+
+A session between client and server starts by the client sending "subs".
+If the server already has a client subscribed to it, it answers "fail" and the
+session ends.
+Otherwise, the server answers "okay".
+After that, the client may either send "thmb" or "capt". "thmb" will be answered
+with "stmb" on success, "capt" with "okay".
+If either operation fails, "fail" will be sent and the session will not end.
+After that, the client is free to send "thmb" or "capt" again.
+If no message is received for a set amount of time, the connection ends. To
+prevent this, "aliv" can be sent by either side at any time to keep the session
+alive.
+In the same way, "quit" may be sent to close the session on command. If
+possible, sessions should always be closed using the quit command.
+
+
+4.1 Command headers
+
+Command messages are 4 byte ascii sequences containing information about the
+kind of command that is sent. 4.1.1 is a list of defined command headers.
+Undefined command headers are illegal. 
+
+4.1.1 Defined command headers
+
+This is a list of all possible command headers. C->S means it may only be sent
+by the client. S->C means it may only be sent by the server. C<>S means it may
+be sent in both directions.
+D denotes that this command header has to be followed by a data block.
+
+subs	C->S		Subscribe to the server, start a session.
+
+capt 	C->S		Order the Server to capture a point cloud and send it to the
+					destination server.
+
+thmb	C->S		Request a thumbnail from the server.
+
+stmb	S->C	D	Thumbnail data in JPEG format.
+
+okay	C<>S		The last action was a success.
+
+fail	C<>S		The last action was a failure.
+
+aliv	C<>S		Keep the session alive.
+
+quit	C<>S		Quit the session.
+
+This list may be subject of extension.
+
+4.2 Data blocks
+
+A data block is prefixed by a 4-byte little-endian integer specifying the length
+of the following data in bytes. The data may be any form of binary data. A data
+block may only follow command headers which are defined to have one (4.1.1)
