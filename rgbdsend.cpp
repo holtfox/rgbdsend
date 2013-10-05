@@ -62,11 +62,11 @@ int main(int argc, char **argv) {
 	
 	openni::VideoStream depth, color;
 	
-// 	init_openni(&device, &depth, &color);
+	init_openni(&device, &depth, &color);
 	
-// 	printf("Resolution:\nDepth: %dx%d @ %d fps\nColor: %dx%d @ %d fps\n",
-// 		   depth.getVideoMode().getResolutionX(), depth.getVideoMode().getResolutionY(), depth.getVideoMode().getFps(),
-// 		   color.getVideoMode().getResolutionX(), color.getVideoMode().getResolutionY(), color.getVideoMode().getFps());
+	printf("Resolution:\nDepth: %dx%d @ %d fps\nColor: %dx%d @ %d fps\n",
+		   depth.getVideoMode().getResolutionX(), depth.getVideoMode().getResolutionY(), depth.getVideoMode().getFps(),
+		   color.getVideoMode().getResolutionX(), color.getVideoMode().getResolutionY(), color.getVideoMode().getFps());
 	
 	char tmpfile[256];
 	Command cmd;
@@ -104,8 +104,13 @@ int main(int argc, char **argv) {
 				daemon.sendCommand("okay", 0, 0);
 			} else if(strncmp(cmd.header, "thmb", 4) == 0) {
 				printf("Received thumbnail command.\n");
-				// make a thumbnail.
-				daemon.sendCommand("stmb", 0, 0);
+				unsigned char *thumbbuf;
+				long unsigned int size;
+				capture_thumbnail(&thumbbuf, &size, color);
+				
+				daemon.sendCommand("stmb", thumbbuf, size);
+				
+				delete[] thumbbuf;
 			} else if(strncmp(cmd.header, "quit", 4) == 0) {
 				daemon.closeConnection();
 			} else if(strncmp(cmd.header, "aliv", 4) == 0) {
@@ -117,7 +122,6 @@ int main(int argc, char **argv) {
 		if(daemon.csock != -1 && in <= 0)
 			daemon.closeConnection();
 		
-// 		
 	}
 	
 	cleanup_curl(curl);

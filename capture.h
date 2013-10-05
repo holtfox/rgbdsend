@@ -37,6 +37,7 @@ void set_closestres(openni::VideoStream &stream, const openni::VideoMode &target
 void read_frame(openni::VideoFrameRef &frame, RawData &data);
 void capture(openni::VideoStream **streams, int streamcount, RawData &data, int *framecounts);
 
-void cleanup_openni(openni::Device &device, openni::VideoStream &depth, openni::VideoStream &color);
+int capture_thumbnail(unsigned char **thumbbuf, long unsigned int *size, openni::VideoStream &color);
 
+void cleanup_openni(openni::Device &device, openni::VideoStream &depth, openni::VideoStream &color);
 #endif

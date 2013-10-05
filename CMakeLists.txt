@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(rgdbsend)
 
 find_package(CURL REQUIRED)
+find_package(JPEG REQUIRED)
 # find_package(OpenNI2 REQUIRED)
 
 find_path(OPENNI2_INCLUDE_DIR OpenNI.h
@@ -17,10 +18,10 @@ set(SRCS
          config.cpp
 )
 
-include_directories(${CURL_INCLUDE_DIR} ${OPENNI2_INCLUDE_DIR})
+include_directories(${CURL_INCLUDE_DIR} ${OPENNI2_INCLUDE_DIR} ${JPEG_INCLUDE_DIR})
 
 add_definitions(-Wall)
 
 add_executable(rgbdsend ${SRCS})
 
-target_link_libraries(rgbdsend ${CURL_LIBRARIES} ${OPENNI2_LIBRARIES})
+target_link_libraries(rgbdsend ${CURL_LIBRARIES} ${OPENNI2_LIBRARIES} ${JPEG_LIBRARIES})

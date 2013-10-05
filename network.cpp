@@ -98,11 +98,9 @@ void Daemon::acceptConnection(void) {
 	if(!receiveCommandSock(cs, &c))
 		return;
 	
-	printf("? %.4s\n", c.header);
 	if(strncmp(c.header, "subs", 4) == 0) {
 		if(this->csock == -1) {
 			int rc = sendCommandSock(cs, "okay", 0, 0);
-			printf("hey?\n");
 			if(rc) {
 				this->csock = cs;
 				printf("Client connected.\n");

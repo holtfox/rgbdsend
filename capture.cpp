@@ -2,6 +2,7 @@
 #include <OpenNI.h>
 #include <cmath>
 #include <ctime>
+#include <jpeglib.h>
 
 #include "capture.h"
 #include "rgbdsend.h"
@@ -168,7 +169,7 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int *
 	int *framestotake = new int[streamcount];
 	
 	for(int i = 0; i < streamcount; i++) {
-		streams[i]->start();		
+		streams[i]->start();
 		framestotake[i] = framecounts[i];
 		printf("take %d frames from stream %d\n", framestotake[i], i);
 	}
@@ -203,6 +204,50 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int *
 			printf("%d ", framestotake[i]);	
 	}
 	printf("\n");	
+}
+
+int capture_thumbnail(unsigned char **thumbbuf, long unsigned int *memsize, openni::VideoStream &color) {
+	openni::Status rc;
+	int readyStream = -1;
+	openni::VideoFrameRef frame;
+	color.start();
+	
+	openni::VideoStream *streams[] = {&color};
+	rc = openni::OpenNI::waitForAnyStream(streams, 1, &readyStream, rgbdsend::read_wait_timeout);
+	if (rc != openni::STATUS_OK) {
+		printf("\nRecording thumbnail timed out.\n");
+		return 0;
+	}
+	
+	color.readFrame(&frame);
+	
+	openni::RGB888Pixel *pixels = (openni::RGB888Pixel *)frame.getData();
+	
+	jpeg_compress_struct cinfo;
+	jpeg_error_mgr jerr;
+	cinfo.err = jpeg_std_error(&jerr);
+	
+	jpeg_create_compress(&cinfo);
+	jpeg_mem_dest(&cinfo, thumbbuf, memsize);
+	
+	cinfo.image_width = frame.getWidth();
+	cinfo.image_height = frame.getHeight();
+	cinfo.input_components = 3;
+	cinfo.in_color_space = JCS_RGB;
+	
+	jpeg_set_defaults(&cinfo);
+	jpeg_set_quality(&cinfo, 75, true);
+	jpeg_start_compress(&cinfo, true);
+	
+	while(cinfo.next_scanline < cinfo.image_height) {
+		JSAMPROW rowpointer;
+		rowpointer = (JSAMPROW) &pixels[cinfo.next_scanline*cinfo.image_width];
+		jpeg_write_scanlines(&cinfo, &rowpointer, 1);
+	}
+	
+	jpeg_finish_compress(&cinfo);
+	
+	return 1;
 }
 
 void cleanup_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color) {
