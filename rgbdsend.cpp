@@ -9,10 +9,32 @@
 #include "rgbdsend.h"
 #include "capture.h"
 #include "pointcloud.h"
-#include "sendfile.h"
+#include "network.h"
 #include "config.h"
 
-
+void record_pointcloud(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::VideoStream &color, Config &conf) {
+	time_t t = time(NULL);
+	strftime(tmpfile, bufsize, "rgbd_%Y%m%d_%H-%M-%S.ply", localtime(&t));
+	
+	RawData raw(depth.getVideoMode().getResolutionX(), depth.getVideoMode().getResolutionY(),
+				color.getVideoMode().getResolutionX(), color.getVideoMode().getResolutionY());
+			
+	printf("Recording started.\n");
+	
+	openni::VideoStream* streams[] = {&depth, &color};
+	int framecounts[] = {conf.capture_depth_frames, conf.capture_color_frames};
+	capture(streams, 2, raw, framecounts);
+		
+	printf("Recording ended.\n");
+	
+	
+	PointCloud cloud(raw.dresx*raw.dresy);
+	depth_to_pointcloud(cloud, raw, depth, color);
+	export_to_ply(tmpfile, cloud);
+	
+	printf("\nExtracted to point cloud: %s\n", tmpfile);
+}
+		
 int main(int argc, char **argv) {
 	openni::Device device;	
 	openni::Status rc;
@@ -33,46 +55,69 @@ int main(int argc, char **argv) {
 		
 	CURL *curl = init_curl();
 	
+	Daemon daemon;
+	daemon.init(conf.daemon_port);
+	
+	
+	
 	openni::VideoStream depth, color;
 	
-	init_openni(&device, &depth, &color);
+// 	init_openni(&device, &depth, &color);
 	
-	printf("Resolution:\nDepth: %dx%d @ %d fps\nColor: %dx%d @ %d fps\n",
-		   depth.getVideoMode().getResolutionX(), depth.getVideoMode().getResolutionY(), depth.getVideoMode().getFps(),
-		   color.getVideoMode().getResolutionX(), color.getVideoMode().getResolutionY(), color.getVideoMode().getFps());
+// 	printf("Resolution:\nDepth: %dx%d @ %d fps\nColor: %dx%d @ %d fps\n",
+// 		   depth.getVideoMode().getResolutionX(), depth.getVideoMode().getResolutionY(), depth.getVideoMode().getFps(),
+// 		   color.getVideoMode().getResolutionX(), color.getVideoMode().getResolutionY(), color.getVideoMode().getFps());
 	
-	char tmpfile[256];	
-	
-	while(1) {		
-		printf("Press Enter to record and send a segment (q to quit): ");
-		if(getc(stdin) == 'q')
-			break;
+	char tmpfile[256];
+	Command cmd;
+	while(1) {
+		timeval t;
+		t.tv_sec = conf.daemon_timeout;
+		t.tv_usec = 0;
 		
-		time_t t = time(NULL);
-		strftime(tmpfile, sizeof(tmpfile), "rgbd_%Y%m%d_%H-%M-%S.ply", localtime(&t));
+		fd_set fds;
+		FD_ZERO(&fds);
+		FD_SET(daemon.sock, &fds);
+		FD_SET(daemon.csock, &fds);
 		
-		RawData raw(depth.getVideoMode().getResolutionX(), depth.getVideoMode().getResolutionY(),
-					color.getVideoMode().getResolutionX(), color.getVideoMode().getResolutionY());
+		int in = select((daemon.csock > daemon.sock ? daemon.csock : daemon.sock)+1, &fds, 0, 0, &t);
 				
-		printf("Recording started.\n");
+		if(FD_ISSET(daemon.sock, &fds))
+			daemon.acceptConnection();
 		
-		openni::VideoStream* streams[] = {&depth, &color};
-		int framecounts[] = {conf.capture_depth_frames, conf.capture_color_frames};
-		capture(streams, 2, raw, framecounts);
+		if(FD_ISSET(daemon.csock, &fds)) {
+			char b[5];
+			if(daemon.receiveCommand(&cmd) == 0) {
+				printf("Daemon Error: Could not receive command.\n");
+				continue;
+			}
 			
-		printf("Recording ended.\n");
+			if(strncmp(cmd.header, "capt", 4) == 0) {
+				printf("Received capture command.\n");
+				record_pointcloud(tmpfile, sizeof(tmpfile), depth, color, conf);
+				
+				if(conf.dest_url && conf.dest_username && conf.dest_password)
+					send_file(curl, tmpfile, conf.dest_url, conf.dest_username, conf.dest_password);
+				else
+					printf("No destination server specified. Skipping transfer.\n");
+				
+				daemon.sendCommand("okay", 0, 0);
+			} else if(strncmp(cmd.header, "thmb", 4) == 0) {
+				printf("Received thumbnail command.\n");
+				// make a thumbnail.
+				daemon.sendCommand("stmb", 0, 0);
+			} else if(strncmp(cmd.header, "quit", 4) == 0) {
+				daemon.closeConnection();
+			} else if(strncmp(cmd.header, "aliv", 4) == 0) {
+			} else {
+				printf("Daemon Error: Received undefined command.\n");
+			}
+		}
 		
+		if(daemon.csock != -1 && in <= 0)
+			daemon.closeConnection();
 		
-		PointCloud cloud(raw.dresx*raw.dresy);
-		depth_to_pointcloud(cloud, raw, depth, color);
-		export_to_ply(tmpfile, cloud);
-		
-		printf("\nExtracted to point cloud: %s\n", tmpfile);
-		
-		if(conf.dest_url && conf.dest_username && conf.dest_password)
-			send_file(curl, tmpfile, conf.dest_url, conf.dest_username, conf.dest_password);
-		else
-			printf("No destination server specified. Skipping transfer.\n");
+// 		
 	}
 	
 	cleanup_curl(curl);

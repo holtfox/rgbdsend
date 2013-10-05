@@ -206,8 +206,8 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int *
 }
 
 void cleanup_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color) {
-	depth.destroy();
-	color.destroy();
-	device.close();
+	depth->destroy();
+	color->destroy();
+	device->close();
 	openni::OpenNI::shutdown();
 }

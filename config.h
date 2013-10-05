@@ -11,7 +11,7 @@ public:
 	Config();
 	~Config();
 	
-	void setDefaults();
+	void setDefaults(void);
 	int read(char *filename);
 	
 	char *dest_url;
@@ -20,6 +20,9 @@ public:
 	
 	int capture_depth_frames;
 	int capture_color_frames;
+	
+	int daemon_port;
+	int daemon_timeout;
 };
 
 #endif

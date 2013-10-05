@@ -13,7 +13,7 @@ set(SRCS
          rgbdsend.cpp
          pointcloud.cpp
          capture.cpp
-         sendfile.cpp
+         network.cpp
          config.cpp
 )
 

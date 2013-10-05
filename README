@@ -127,6 +127,7 @@ This list may be subject of extension.
 
 4.2 Data blocks
 
-A data block is prefixed by a 4-byte little-endian integer specifying the length
-of the following data in bytes. The data may be any form of binary data. A data
-block may only follow command headers which are defined to have one (4.1.1)
+A data block is prefixed by an unsigned 4-byte big-endian integer specifying the
+length of the following data in bytes. The data may be any form of binary data.
+A data block may only follow command headers which are defined to have one
+(4.1.1).

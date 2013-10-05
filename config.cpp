@@ -7,9 +7,11 @@
 
 Config::Config() {
 	memset(this, 0, sizeof(Config));
+	
+	setDefaults();
 }
 
-void Config::setDefaults() {
+void Config::setDefaults(void ) {
 	delete[] this->dest_url;
 	delete[] this->dest_username;
 	delete[] this->dest_password;
@@ -20,6 +22,9 @@ void Config::setDefaults() {
 	
 	this->capture_color_frames = 6;
 	this->capture_depth_frames = 60;
+	
+	this->daemon_port = 11222;
+	this->daemon_timeout = 3;
 }
 
 Config::~Config() {
@@ -58,7 +63,11 @@ int Config::read(char *filename) {
 		{"password", &this->dest_password, conf_strval}},
 	  conf_section_capture[] = {
 		{"depth_framecount", &this->capture_depth_frames, conf_intval},
-		{"color_framecount", &this->capture_color_frames, conf_intval}};
+		{"color_framecount", &this->capture_color_frames, conf_intval}},
+	  conf_section_daemon[] = {
+		{"port", &this->daemon_port, conf_intval},
+		{"timeout", &this->daemon_timeout, conf_intval}
+	};
 	
 	struct ConfigSection {
 		char name[CONF_MAX_SECTION_LEN];
@@ -66,7 +75,10 @@ int Config::read(char *filename) {
 		int num;
 	} conf_sections[] = {
 		{"Destination", conf_section_destination, sizeof(conf_section_destination)/sizeof(ConfigKeyword)},
-		{"Capture", conf_section_capture, sizeof(conf_section_capture)/sizeof(ConfigKeyword)}};
+		{"Capture", conf_section_capture, sizeof(conf_section_capture)/sizeof(ConfigKeyword)},
+		{"Daemon", conf_section_daemon, sizeof(conf_section_daemon)/sizeof(ConfigKeyword)}
+	};
+		
 	
 	int current_section = -1;
 	

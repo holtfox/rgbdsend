@@ -19,3 +19,10 @@ password s3cr3t
 
 color_framecount 6
 depth_framecount 60
+
+[Daemon]
+# This section sets the server properties of the remote control daemon.
+
+port 11222
+# connection timeout in seconds
+timeout 3
