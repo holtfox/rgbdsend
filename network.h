@@ -21,10 +21,12 @@ class Daemon {
 private:
 	int receiveCommandSock(int sock, Command *buf);
 	int sendCommandSock(int sock, const char*, void *data, uint32_t len);
+	
+	int recvAll(int sock, void *buf, size_t length);
 public:
 	Daemon();
 	
-	void init(int port);
+	void init(int port, int timeout);
 	void acceptConnection(void);
 	int receiveCommand(Command *buf);
 	int sendCommand(const char*, void *data, uint32_t len);
@@ -34,6 +36,9 @@ public:
 	int port;
 	
 	int csock;
+	
+	int timeout;
+	clock_t lastcommand;
 	
 	char buf[COMMAND_MAXSIZE];
 };

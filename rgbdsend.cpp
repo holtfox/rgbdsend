@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
 	CURL *curl = init_curl();
 	
 	Daemon daemon;
-	daemon.init(conf.daemon_port);
+	daemon.init(conf.daemon_port, conf.daemon_timeout);
 	
 	
 	
@@ -113,7 +113,6 @@ int main(int argc, char **argv) {
 				delete[] thumbbuf;
 			} else if(strncmp(cmd.header, "quit", 4) == 0) {
 				daemon.closeConnection();
-			} else if(strncmp(cmd.header, "aliv", 4) == 0) {
 			} else {
 				printf("Daemon Error: Received undefined command.\n");
 			}

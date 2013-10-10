@@ -4,7 +4,7 @@
 #include <sys/select.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <fcntl.h>
+#include <time.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
@@ -74,12 +74,10 @@ Daemon::Daemon() {
 	this->csock = -1;
 }
 
-void Daemon::init(int port) {
+void Daemon::init(int port, int timeout) {
 	sockaddr_in name;
 	this->sock = socket(AF_INET,SOCK_STREAM,0);
 	this->port = port;
-	
-// 	fcntl(this->sock, F_SETFL, O_NONBLOCK);
 	
 	name.sin_family = AF_INET;
 	name.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -87,6 +85,11 @@ void Daemon::init(int port) {
 	
 	bind(this->sock, (sockaddr *)&name, sizeof(name));
 	listen(this->sock, 2);
+	
+	this->timeout = timeout;
+	this->lastcommand = clock();
+	
+	printf("Listening on port %d\n", port);
 }
 
 void Daemon::acceptConnection(void) {
@@ -112,8 +115,23 @@ void Daemon::acceptConnection(void) {
 }
 
 void Daemon::closeConnection(void) {
+	printf("Client disconnected.\n");
 	close(this->csock);
 	this->csock = -1;
+}
+
+int Daemon::recvAll(int sock, void *buf, size_t length) {
+	uint readbytes = 0;
+	
+	while(readbytes < length) {
+		int n = recv(sock, ((char *)buf)+readbytes, length-readbytes, 0);
+		if(n == -1 || clock() - lastcommand > timeout*CLOCKS_PER_SEC)
+			return -1;
+		
+		readbytes += n;
+	}
+	
+	return length;
 }
 
 int Daemon::receiveCommandSock(int sock, Command *buf) {
@@ -122,8 +140,7 @@ int Daemon::receiveCommandSock(int sock, Command *buf) {
 	if(sock == -1)
 		return 0;
 	
-	n = recv(sock, this->buf, 4, MSG_WAITALL);
-	
+	n = recvAll(sock, this->buf, 4);
 	if(n != 4)
 		return 0;
 	
@@ -134,6 +151,12 @@ int Daemon::receiveCommandSock(int sock, Command *buf) {
 // as of now, the client doesn't have any commands with data blocks, so we're
 // done.
 	
+	lastcommand = clock();
+	
+	if(strcmp(buf->header, "aliv") == 0) { // filter keep-alives.
+		return receiveCommandSock(sock, buf);
+	}	
+		
 	return 1;
 }
 
