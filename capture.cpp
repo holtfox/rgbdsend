@@ -210,7 +210,9 @@ int capture_thumbnail(unsigned char **thumbbuf, long unsigned int *memsize, open
 	openni::Status rc;
 	int readyStream = -1;
 	openni::VideoFrameRef frame;
+
 	color.start();
+	
 	
 	openni::VideoStream *streams[] = {&color};
 	rc = openni::OpenNI::waitForAnyStream(streams, 1, &readyStream, rgbdsend::read_wait_timeout);
@@ -228,6 +230,8 @@ int capture_thumbnail(unsigned char **thumbbuf, long unsigned int *memsize, open
 	cinfo.err = jpeg_std_error(&jerr);
 	
 	jpeg_create_compress(&cinfo);
+	*thumbbuf = NULL;
+	*memsize = 0;
 	jpeg_mem_dest(&cinfo, thumbbuf, memsize);
 	
 	cinfo.image_width = frame.getWidth();
@@ -246,7 +250,8 @@ int capture_thumbnail(unsigned char **thumbbuf, long unsigned int *memsize, open
 	}
 	
 	jpeg_finish_compress(&cinfo);
-	
+	jpeg_destroy_compress(&cinfo);
+	color.stop();
 	return 1;
 }
 

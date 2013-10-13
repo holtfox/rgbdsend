@@ -112,13 +112,14 @@ int main(int argc, char **argv) {
 				daemon.sendCommand("okay", 0, 0);
 			} else if(strncmp(cmd.header, "thmb", 4) == 0) {
 				printf("Received thumbnail command.\n");
-				unsigned char *thumbbuf;
-				long unsigned int size;
+				unsigned char *thumbbuf = NULL;
+				long unsigned int size = 0;
 				capture_thumbnail(&thumbbuf, &size, color);
+				printf("Captured thumbnail. %ld bytes\n", size);
 				
 				daemon.sendCommand("stmb", thumbbuf, size);
 				
-				delete[] thumbbuf;
+//				delete[] thumbbuf;
 			} else if(strncmp(cmd.header, "quit", 4) == 0) {
 				daemon.closeConnection();
 			} else {
