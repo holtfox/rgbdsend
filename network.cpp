@@ -51,7 +51,8 @@ void send_file(CURL *curl, char *filename, char *url, char *user, char *password
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_READDATA, file);
     curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t) fsize);
-		
+	curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_TRY);
+	
 	if(curl_easy_perform(curl) != 0) {
 		printf("Upload Error: %s.\n", curl_errbuf);
 	}	
