@@ -236,7 +236,7 @@ int capture_thumbnail(unsigned char **thumbbuf, long unsigned int *memsize, open
 	cinfo.in_color_space = JCS_RGB;
 	
 	jpeg_set_defaults(&cinfo);
-	jpeg_set_quality(&cinfo, 75, true);
+	jpeg_set_quality(&cinfo, 20, true);
 	jpeg_start_compress(&cinfo, true);
 	
 	while(cinfo.next_scanline < cinfo.image_height) {

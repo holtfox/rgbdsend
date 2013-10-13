@@ -97,9 +97,14 @@ void Daemon::acceptConnection(void) {
 	
 	cs = accept(this->sock, 0, 0);
 	
-	Command c;	
-	if(!receiveCommandSock(cs, &c))
-		return;
+	Command c;
+	int r;
+	do {
+		r = receiveCommandSock(cs, &c);
+		
+		if(r == 0)
+			return;
+	} while(r == 2); // filter keep alives	
 	
 	if(strncmp(c.header, "subs", 4) == 0) {
 		if(this->csock == -1) {
@@ -154,7 +159,7 @@ int Daemon::receiveCommandSock(int sock, Command *buf) {
 	lastcommand = clock();
 	
 	if(strcmp(buf->header, "aliv") == 0) { // filter keep-alives.
-		return receiveCommandSock(sock, buf);
+		return 2;
 	}	
 		
 	return 1;

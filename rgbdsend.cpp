@@ -81,17 +81,25 @@ int main(int argc, char **argv) {
 		FD_SET(daemon.csock, &fds);
 		
 		int in = select((daemon.csock > daemon.sock ? daemon.csock : daemon.sock)+1, &fds, 0, 0, &t);
-				
+		
+		if(daemon.csock != -1)
+			daemon.sendCommand("aliv", 0, 0);
+		
 		if(FD_ISSET(daemon.sock, &fds))
 			daemon.acceptConnection();
 		
 		if(FD_ISSET(daemon.csock, &fds)) {
 			char b[5];
-			if(daemon.receiveCommand(&cmd) == 0) {
+			int r = daemon.receiveCommand(&cmd);
+			
+			if(r == 0) {
 				printf("Daemon Error: Could not receive command.\n");
 				continue;
 			}
 			
+			if(r == 2) // keep alive
+				continue;			
+									
 			if(strncmp(cmd.header, "capt", 4) == 0) {
 				printf("Received capture command.\n");
 				record_pointcloud(tmpfile, sizeof(tmpfile), depth, color, conf);
