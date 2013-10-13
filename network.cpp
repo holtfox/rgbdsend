@@ -43,12 +43,27 @@ void send_file(CURL *curl, char *filename, char *url, char *user, char *password
 	buf[userlen] = ':';
 	strcpy(buf+userlen+1, password);
 	
+	int urllen = strlen(url);
+	int urlbufsize = strlen(filename) + urllen;
+	
+	if(url[urllen-1] != '/')
+		urlbufsize++;
+			
+	char *urlbuf = new char[urlbufsize];
+	strcpy(urlbuf,url);
+	if(url[urllen-1] != '/') {
+		urlbuf[urllen] = '/';
+		urlbuf[urllen] = 0;
+	}
+	
+	strcat(urlbuf,filename);
+	
 	curl_easy_setopt(curl, CURLOPT_USERPWD, buf);
 	
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curl_errbuf);
 	curl_easy_setopt(curl, CURLOPT_READFUNCTION, readfile_callback);
     curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_URL, urlbuf);
     curl_easy_setopt(curl, CURLOPT_READDATA, file);
     curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t) fsize);
 	curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_TRY);
@@ -63,6 +78,7 @@ void send_file(CURL *curl, char *filename, char *url, char *user, char *password
 	
 	fclose(file);
 	delete[] buf;
+	delete[] urlbuf;
 }
 
 void curl_cleanup(CURL* curl) {
