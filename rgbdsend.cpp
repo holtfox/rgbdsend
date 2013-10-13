@@ -125,6 +125,9 @@ int main(int argc, char **argv) {
 			}
 		}
 		
+		if(daemon.csock != -1)
+			daemon.sendCommand("aliv", 0, 0);
+		
 		if(daemon.csock != -1 && in <= 0)
 			daemon.closeConnection();
 		
