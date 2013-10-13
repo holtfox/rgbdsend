@@ -53,10 +53,11 @@ void send_file(CURL *curl, char *filename, char *url, char *user, char *password
     curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t) fsize);
 	curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_TRY);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 	
 	if(curl_easy_perform(curl) != 0) {
 		printf("Upload Error: %s.\n", curl_errbuf);
-	}	
+	}
 	
 	curl_easy_reset(curl);
 	
