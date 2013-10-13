@@ -14,7 +14,7 @@ public:
 	
 	char header[4];
 	uint32_t datalen;
-	void *data = NULL;
+	void *data;
 };
 
 class Daemon {
