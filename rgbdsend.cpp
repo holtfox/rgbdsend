@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
 	printf("Resolution:\nDepth: %dx%d @ %d fps\nColor: %dx%d @ %d fps\n",
 		   depth.getVideoMode().getResolutionX(), depth.getVideoMode().getResolutionY(), depth.getVideoMode().getFps(),
 		   color.getVideoMode().getResolutionX(), color.getVideoMode().getResolutionY(), color.getVideoMode().getFps());
-	
+		
 	char tmpfile[256];
 	Command cmd;
 	while(1) {
@@ -82,8 +82,6 @@ int main(int argc, char **argv) {
 		
 		int in = select((daemon.csock > daemon.sock ? daemon.csock : daemon.sock)+1, &fds, 0, 0, &t);
 		
-		if(daemon.csock != -1)
-			daemon.sendCommand("aliv", 0, 0);
 		
 		if(FD_ISSET(daemon.sock, &fds))
 			daemon.acceptConnection();
@@ -131,7 +129,7 @@ int main(int argc, char **argv) {
 			daemon.closeConnection();
 		
 	}
-	
+		
 	cleanup_curl(curl);
 	cleanup_openni(device, depth, color);
 }
