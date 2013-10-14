@@ -82,6 +82,8 @@ int main(int argc, char **argv) {
 		
 		int in = select((daemon.csock > daemon.sock ? daemon.csock : daemon.sock)+1, &fds, 0, 0, &t);
 		
+		if(daemon.csock != -1)
+			daemon.sendCommand("aliv", 0, 0);
 		
 		if(FD_ISSET(daemon.sock, &fds))
 			daemon.acceptConnection();
@@ -92,6 +94,8 @@ int main(int argc, char **argv) {
 			
 			if(r == 0) {
 				printf("Daemon Error: Could not receive command.\n");
+				
+				daemon.closeConnection();
 				continue;
 			}
 			
@@ -124,10 +128,7 @@ int main(int argc, char **argv) {
 				printf("Daemon Error: Received undefined command.\n");
 			}
 		}
-		
-		if(daemon.csock != -1)
-			daemon.sendCommand("aliv", 0, 0);
-		
+				
 		if(daemon.csock != -1 && in <= 0)
 			daemon.closeConnection();
 		
