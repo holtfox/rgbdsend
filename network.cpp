@@ -72,6 +72,8 @@ void send_file(CURL *curl, char *filename, char *url, char *user, char *password
 	
 	if(curl_easy_perform(curl) != 0) {
 		printf("Upload Error: %s.\n", curl_errbuf);
+	} else {
+		printf("Upload successful.\n");
 	}
 	
 	curl_easy_reset(curl);
