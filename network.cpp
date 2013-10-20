@@ -53,7 +53,7 @@ void send_file(CURL *curl, char *filename, char *url, char *user, char *password
 	strcpy(urlbuf,url);
 	if(url[urllen-1] != '/') {
 		urlbuf[urllen] = '/';
-		urlbuf[urllen] = 0;
+		urlbuf[urllen+1] = 0;
 	}
 	
 	strcat(urlbuf,filename);
