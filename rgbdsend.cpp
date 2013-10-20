@@ -81,10 +81,7 @@ int main(int argc, char **argv) {
 		FD_SET(daemon.csock, &fds);
 		
 		int in = select((daemon.csock > daemon.sock ? daemon.csock : daemon.sock)+1, &fds, 0, 0, &t);
-		
-		if(daemon.csock != -1)
-			daemon.sendCommand("aliv", 0, 0);
-		
+				
 		if(FD_ISSET(daemon.sock, &fds))
 			daemon.acceptConnection();
 		

@@ -113,15 +113,15 @@ capt 	C->S		Order the Server to capture a point cloud and send it to the
 
 thmb	C->S		Request a thumbnail from the server.
 
+aliv	C->S		Keep the session alive.
+
 stmb	S->C	D	Thumbnail data in JPEG format.
 
-okay	C<>S		The last action was a success.
+okay	S->C		The last action was a success.
 
-fail	C<>S		The last action was a failure.
+fail	S->C		The last action was a failure.
 
-aliv	C<>S		Keep the session alive.
-
-quit	C<>S		Quit the session.
+quit	C->S		Quit the session.
 
 This list may be subject of extension.
 
