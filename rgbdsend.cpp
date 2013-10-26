@@ -189,10 +189,11 @@ int main(int argc, char **argv) {
 		}
 				
 		if(daemon.csock != -1 && in <= 0) {
-			daemon.closeConnection();
-			if(!onilist.empty())
-				process_onis(onilist, curl, conf);
+			daemon.closeConnection();			
 		}
+		
+		if(daemon.csock == -1 && !onilist.empty())
+				process_onis(onilist, curl, conf);
 	}
 		
 	cleanup_curl(curl);
