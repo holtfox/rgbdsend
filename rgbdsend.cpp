@@ -46,8 +46,8 @@ void oni_to_pointcloud(char *tmpfile) {
 		
 	int fnlen = strlen(tmpfile);
 	tmpfile[fnlen-3] = 'p';
-	tmpfile[fnlen-3] = 'l';
-	tmpfile[fnlen-3] = 'y';
+	tmpfile[fnlen-2] = 'l';
+	tmpfile[fnlen-1] = 'y';
 	
 	onidev.getPlaybackControl()->setRepeatEnabled(false);
 	
@@ -193,7 +193,7 @@ int main(int argc, char **argv) {
 		}
 		
 		if(daemon.csock == -1 && !onilist.empty())
-				process_onis(onilist, curl, conf);
+			process_onis(onilist, curl, conf);
 	}
 		
 	cleanup_curl(curl);
