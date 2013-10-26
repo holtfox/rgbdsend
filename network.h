@@ -4,7 +4,7 @@
 #include <curl/curl.h>
 
 enum {
-	COMMAND_MAXSIZE = 2048
+	COMMAND_MAXSIZE = 65536
 };
 
 class Command {

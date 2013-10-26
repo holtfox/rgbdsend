@@ -199,10 +199,9 @@ int Daemon::sendCommandSock(int sock, const char* cmd, void *data, uint32_t len)
 	
 	memcpy(this->buf+8, data, len);
 	
-	n = send(sock, this->buf, 4+4*(len != 0)+len, 0);
-	
-	
-	if(n != 4+4*(len != 0)+len)
+	n = send(sock, this->buf, 4+(len != 0)*(4+len), 0);
+		
+	if(n != 4+(len != 0)*(4+len))
 		return 0;
 	
 	return 1;
