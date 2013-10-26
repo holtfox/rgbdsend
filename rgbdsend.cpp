@@ -18,7 +18,7 @@ void record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::
 		
 	time_t t = time(NULL);
 	strftime(tmpfile, bufsize, "rgbd_%Y%m%d_%H-%M-%S.oni", localtime(&t));
-	
+	printf("Starting ONI Capture.\n");
 	depth.start();
 	color.start();
 	recorder.create(tmpfile);
@@ -34,6 +34,8 @@ void record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::
 	color.stop();
 	depth.stop();
 	recorder.destroy();
+	
+	printf("Captured ONI to '%s'\n", tmpfile);
 }
 
 void oni_to_pointcloud(char *tmpfile) {
