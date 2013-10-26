@@ -12,13 +12,10 @@ username rgbd
 password s3cr3t
 
 [Capture]
-# The following two integers set the amount of raw frames to be captured.
-# rgbdsend then forms an average over them to smooth the sensor measurements.
-# Generally, the depth frame count should be higher because the depth field
-# needs to have much higher precision than the colors.
+# capture_time sets the amount of time in milliseconds rgbdsend shall fetch
+# frames from the sensor per shot. More time means more accurate models.
 
-color_framecount 6
-depth_framecount 60
+capture_time 2000
 
 [Daemon]
 # This section sets the server properties of the remote control daemon.

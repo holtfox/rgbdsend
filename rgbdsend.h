@@ -3,9 +3,10 @@
 
 namespace rgbdsend {
 	const char *const config_file_name = "config";
+	const int filename_bufsize = 256;
 	
 	const int read_wait_timeout = 20000;	
-	const int depth_averaging_threshold = 300;
+	const int depth_averaging_threshold = 300;	
 }
 
 #endif

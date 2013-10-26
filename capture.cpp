@@ -39,14 +39,8 @@ RawData::~RawData() {
 	delete[] this->dframenums;
 }
 
-void init_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color) {
-	openni::Status rc = openni::OpenNI::initialize();
-	if(rc != openni::STATUS_OK)	{
-		printf("OpenNI: Initialize failed\n%s", openni::OpenNI::getExtendedError());
-		exit(1);
-	}
-	
-	rc = device->open(openni::ANY_DEVICE);
+void init_openni_device(const char *uri, openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color) {
+	openni::Status rc = device->open(uri);
 	if(rc != openni::STATUS_OK) {
 		printf("OpenNI: Couldn't open device\n%s", openni::OpenNI::getExtendedError());
 		exit(2);
@@ -72,6 +66,16 @@ void init_openni(openni::Device *device, openni::VideoStream *depth, openni::Vid
 		printf("OpenNI: Couldn't create color stream\n%s", openni::OpenNI::getExtendedError());
 		exit(1);
 	}
+}
+
+void init_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color) {
+	openni::Status rc = openni::OpenNI::initialize();
+	if(rc != openni::STATUS_OK)	{
+		printf("OpenNI: Initialize failed\n%s", openni::OpenNI::getExtendedError());
+		exit(1);
+	}
+	
+	init_openni_device(openni::ANY_DEVICE, device, depth, color);
 }
 
 void set_maxres(openni::VideoStream &stream) {

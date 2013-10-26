@@ -20,8 +20,7 @@ void Config::setDefaults(void ) {
 	this->dest_username = NULL;
 	this->dest_password = NULL;
 	
-	this->capture_color_frames = 6;
-	this->capture_depth_frames = 60;
+	this->capture_time = 2000;
 	
 	this->daemon_port = 11222;
 	this->daemon_timeout = 3;
@@ -62,8 +61,7 @@ int Config::read(char *filename) {
 		{"username", &this->dest_username, conf_strval},
 		{"password", &this->dest_password, conf_strval}},
 	  conf_section_capture[] = {
-		{"depth_framecount", &this->capture_depth_frames, conf_intval},
-		{"color_framecount", &this->capture_color_frames, conf_intval}},
+		{"capture_time", &this->capture_time, conf_intval}},
 	  conf_section_daemon[] = {
 		{"port", &this->daemon_port, conf_intval},
 		{"timeout", &this->daemon_timeout, conf_intval}

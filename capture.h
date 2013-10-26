@@ -31,6 +31,7 @@ public:
 	int cframenum;	
 };
 
+void init_openni_device(const char *dev, openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color);
 void init_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color);
 void set_maxres(openni::VideoStream &stream);
 void set_closestres(openni::VideoStream &stream, const openni::VideoMode &target);

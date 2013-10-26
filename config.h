@@ -18,8 +18,7 @@ public:
 	char *dest_username;
 	char *dest_password;
 	
-	int capture_depth_frames;
-	int capture_color_frames;
+	int capture_time;
 	
 	int daemon_port;
 	int daemon_timeout;

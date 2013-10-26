@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <OpenNI.h>
+#include <queue>
 
 #include "rgbdsend.h"
 #include "capture.h"
@@ -12,9 +13,41 @@
 #include "network.h"
 #include "config.h"
 
-void record_pointcloud(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::VideoStream &color, Config &conf) {
+void record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::VideoStream &color, Config &conf) {
+	openni::Recorder recorder;
+		
 	time_t t = time(NULL);
-	strftime(tmpfile, bufsize, "rgbd_%Y%m%d_%H-%M-%S.ply", localtime(&t));
+	strftime(tmpfile, bufsize, "rgbd_%Y%m%d_%H-%M-%S.oni", localtime(&t));
+	
+	depth.start();
+	color.start();
+	recorder.create(tmpfile);
+	recorder.attach(color);
+	recorder.attach(depth);
+	recorder.start();
+	
+	int starttime = clock();
+	while(clock()-starttime < conf.capture_time*CLOCKS_PER_SEC/1000)
+		usleep(100);
+	
+	recorder.stop();
+	color.stop();
+	depth.stop();
+	recorder.destroy();
+}
+
+void oni_to_pointcloud(char *tmpfile) {
+	openni::Device onidev;
+	openni::VideoStream depth, color;
+	
+	init_openni_device(tmpfile, &onidev, &depth, &color);
+		
+	int fnlen = strlen(tmpfile);
+	tmpfile[fnlen-3] = 'p';
+	tmpfile[fnlen-3] = 'l';
+	tmpfile[fnlen-3] = 'y';
+	
+	onidev.getPlaybackControl()->setRepeatEnabled(false);
 	
 	RawData raw(depth.getVideoMode().getResolutionX(), depth.getVideoMode().getResolutionY(),
 				color.getVideoMode().getResolutionX(), color.getVideoMode().getResolutionY());
@@ -22,23 +55,53 @@ void record_pointcloud(char *tmpfile, int bufsize, openni::VideoStream &depth, o
 	printf("Recording started.\n");
 	
 	openni::VideoStream* streams[] = {&depth, &color};
-	int framecounts[] = {conf.capture_depth_frames, conf.capture_color_frames};
+	int framecounts[] = {onidev.getPlaybackControl()->getNumberOfFrames(depth),
+						 onidev.getPlaybackControl()->getNumberOfFrames(color)};
 	capture(streams, 2, raw, framecounts);
 		
 	printf("Recording ended.\n");
-	
-	
+		
 	PointCloud cloud(raw.dresx*raw.dresy);
 	depth_to_pointcloud(cloud, raw, depth, color);
 	export_to_ply(tmpfile, cloud);
 	
 	printf("\nExtracted to point cloud: %s\n", tmpfile);
+	
+	depth.destroy();
+	color.destroy();
+	onidev.close();
+}
+
+void process_onis(std::queue<char *> filelist, CURL *curl, Config &conf) {
+	printf("Started processing captured onis...\n");
+	
+	while(!filelist.empty()) {
+		printf("%s\n", filelist.front());
+		oni_to_pointcloud(filelist.front());		
+		
+		if(conf.dest_url && conf.dest_username && conf.dest_password)
+			send_file(curl, filelist.front(), conf.dest_url, conf.dest_username, conf.dest_password);
+		else
+			printf("No destination server specified. Skipping transfer.\n");
+		
+		char *p = strrchr(filelist.front(), '.');
+		p[1] = 'o';
+		p[2] = 'n';
+		p[3] = 'i';
+		
+		remove(filelist.front());
+		
+		delete[] filelist.front();
+		filelist.pop();
+	}
+	
+	printf("Done processing.\n");
 }
 		
 int main(int argc, char **argv) {
 	openni::Device device;	
 	openni::Status rc;
-			
+		
 	char *prefix = strrchr(argv[0], '/')+1;
 	char *cfgfile = new char[prefix-argv[0]+sizeof(rgbdsend::config_file_name)+1];
 	
@@ -57,9 +120,7 @@ int main(int argc, char **argv) {
 	
 	Daemon daemon;
 	daemon.init(conf.daemon_port, conf.daemon_timeout);
-	
-	
-	
+		
 	openni::VideoStream depth, color;
 	
 	init_openni(&device, &depth, &color);
@@ -67,8 +128,9 @@ int main(int argc, char **argv) {
 	printf("Resolution:\nDepth: %dx%d @ %d fps\nColor: %dx%d @ %d fps\n",
 		   depth.getVideoMode().getResolutionX(), depth.getVideoMode().getResolutionY(), depth.getVideoMode().getFps(),
 		   color.getVideoMode().getResolutionX(), color.getVideoMode().getResolutionY(), color.getVideoMode().getFps());
-		
-	char tmpfile[256];
+	
+	std::queue<char *> onilist;
+	
 	Command cmd;
 	while(1) {
 		timeval t;
@@ -101,13 +163,11 @@ int main(int argc, char **argv) {
 									
 			if(strncmp(cmd.header, "capt", 4) == 0) {
 				printf("Received capture command.\n");
-				record_pointcloud(tmpfile, sizeof(tmpfile), depth, color, conf);
+				onilist.push(new char[rgbdsend::filename_bufsize]);
 				
-				if(conf.dest_url && conf.dest_username && conf.dest_password)
-					send_file(curl, tmpfile, conf.dest_url, conf.dest_username, conf.dest_password);
-				else
-					printf("No destination server specified. Skipping transfer.\n");
-				
+				record_oni(onilist.back(), rgbdsend::filename_bufsize, depth, color, conf);
+				//record_pointcloud(tmpfile, sizeof(tmpfile), depth, color, conf);
+							
 				daemon.sendCommand("okay", 0, 0);
 			} else if(strncmp(cmd.header, "thmb", 4) == 0) {
 				printf("Received thumbnail command.\n");
@@ -126,9 +186,11 @@ int main(int argc, char **argv) {
 			}
 		}
 				
-		if(daemon.csock != -1 && in <= 0)
+		if(daemon.csock != -1 && in <= 0) {
 			daemon.closeConnection();
-		
+			if(!onilist.empty())
+				process_onis(onilist, curl, conf);
+		}
 	}
 		
 	cleanup_curl(curl);
