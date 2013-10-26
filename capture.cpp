@@ -67,8 +67,8 @@ void init_openni_device(const char *uri, openni::Device *device, openni::VideoSt
 static void set_cropping(openni::VideoStream *s) {
 	int w = s->getVideoMode().getResolutionX();
 	int h = s->getVideoMode().getResolutionY();
-	int cx = w*100/20;	
-	int cy = h*100/20;
+	int cx = w*20/100;	
+	int cy = h*20/100;
 	s->setCropping(cx, cy, w-2*cx, h-cy);
 }
 
