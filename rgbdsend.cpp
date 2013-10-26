@@ -74,7 +74,7 @@ void oni_to_pointcloud(char *tmpfile) {
 	onidev.close();
 }
 
-void process_onis(std::queue<char *> filelist, CURL *curl, Config &conf) {
+void process_onis(std::queue<char *> &filelist, CURL *curl, Config &conf) {
 	printf("Started processing captured onis...\n");
 	
 	while(!filelist.empty()) {
