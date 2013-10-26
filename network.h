@@ -38,7 +38,6 @@ public:
 	int csock;
 	
 	int timeout;
-	clock_t lastcommand;
 	
 	char buf[COMMAND_MAXSIZE];
 };

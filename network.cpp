@@ -108,7 +108,6 @@ void Daemon::init(int port, int timeout) {
 	listen(this->sock, 2);
 	
 	this->timeout = timeout;
-	this->lastcommand = clock();
 	
 	printf("Listening on port %d\n", port);
 }
@@ -122,7 +121,6 @@ void Daemon::acceptConnection(void) {
 	int r;
 	do {
 		r = receiveCommandSock(cs, &c);
-		
 		if(r == 0)
 			return;
 	} while(r == 2); // filter keep alives	
@@ -148,12 +146,16 @@ void Daemon::closeConnection(void) {
 
 int Daemon::recvAll(int sock, void *buf, size_t length) {
 	uint readbytes = 0;
-	
+	int lastrecv = clock();
 	while(readbytes < length) {
 		int n = recv(sock, ((char *)buf)+readbytes, length-readbytes, 0);
-		if(n == -1 || clock() - lastcommand > timeout*CLOCKS_PER_SEC)
+		if(n == -1 || clock() - lastrecv > timeout*CLOCKS_PER_SEC)
 			return -1;
-		readbytes += n;
+		
+		if(n > 0) {
+			readbytes += n;
+			lastrecv = clock();
+		}
 	}
 	
 	return length;
@@ -175,8 +177,6 @@ int Daemon::receiveCommandSock(int sock, Command *buf) {
 	
 // as of now, the client doesn't have any commands with data blocks, so we're
 // done.
-	
-	lastcommand = clock();
 	
 	if(strcmp(buf->header, "aliv") == 0) { // filter keep-alives.
 		return 2;
