@@ -51,8 +51,20 @@ void oni_to_pointcloud(char *tmpfile) {
 	
 	onidev.getPlaybackControl()->setRepeatEnabled(false);
 	
-	RawData raw(depth.getVideoMode().getResolutionX(), depth.getVideoMode().getResolutionY(),
-				color.getVideoMode().getResolutionX(), color.getVideoMode().getResolutionY());
+	int dw, dh, cw, ch;
+	int tmp1, tmp2;
+	
+	if(!depth.getCropping(&tmp1, &tmp2, &dw, &dh)) {
+		dw = depth.getVideoMode().getResolutionX();
+		dh = depth.getVideoMode().getResolutionY();
+	}
+	
+	if(!color.getCropping(&tmp1, &tmp2, &cw, &ch)) {
+		cw = color.getVideoMode().getResolutionX();
+		ch = color.getVideoMode().getResolutionY();
+	}
+	
+	RawData raw(dw, dh, cw, ch);
 			
 	printf("Recording started.\n");
 	

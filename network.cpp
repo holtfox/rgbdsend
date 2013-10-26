@@ -151,10 +151,10 @@ int Daemon::recvAll(int sock, void *buf, size_t length) {
 		int n = recv(sock, ((char *)buf)+readbytes, length-readbytes, 0);
 		if(n == -1 || clock() - lastrecv > timeout*CLOCKS_PER_SEC)
 			return -1;
-		
+				
 		if(n > 0) {
 			readbytes += n;
-			lastrecv = clock();
+			lastrecv = clock();			
 		}
 	}
 	

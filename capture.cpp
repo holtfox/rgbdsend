@@ -196,28 +196,30 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int *
 		int readyStream = -1;
 		rc = openni::OpenNI::waitForAnyStream(streams, sc, &readyStream, rgbdsend::read_wait_timeout);
 		if (rc != openni::STATUS_OK) {
-			printf("\nRecording timed out.\n");
+			printf("\nONI file was read.\n");
 			break;
 		}
-
-		if(framestotake[readyStream] > 0) {
-			streams[readyStream]->readFrame(&frame);
-			framestotake[readyStream]--;
-			read_frame(frame, raw);
-			
-			if(framestotake[readyStream] == 0) {
-				streams[readyStream]->stop();
-				
-				sc--;
-				streams[readyStream] = streams[sc];
-				framestotake[readyStream] = framestotake[sc];
-				printf("\n");
-			}			
-		}
 		
-		printf("\rframes left: ");
-		for(int i = 0; i < sc; i++)
-			printf("%d ", framestotake[i]);	
+		streams[readyStream]->readFrame(&frame);
+		read_frame(frame, raw);
+// 		if(framestotake[readyStream] > 0) {
+// 			streams[readyStream]->readFrame(&frame);
+// 			framestotake[readyStream]--;
+// 			read_frame(frame, raw);
+// 			
+// 			if(framestotake[readyStream] == 0) {
+// 				streams[readyStream]->stop();
+// 				
+// 				sc--;
+// 				streams[readyStream] = streams[sc];
+// 				framestotake[readyStream] = framestotake[sc];
+// 				printf("\n");
+// 			}			
+// 		}
+		
+// 		printf("\rframes left: ");
+// 		for(int i = 0; i < sc; i++)
+// 			printf("%d ", framestotake[i]);	
 	}
 	printf("\n");	
 }
