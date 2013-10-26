@@ -46,11 +46,7 @@ void init_openni_device(const char *uri, openni::Device *device, openni::VideoSt
 		exit(2);
 	}
 	
-	if(device->isImageRegistrationModeSupported(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR))	
-		device->setImageRegistrationMode(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR);
-	else
-		printf("OpenNI Warning: depth to image registration not supported by device!\nColor values will appear shifted.\n");
-	
+		
 	if(device->getSensorInfo(openni::SENSOR_DEPTH) != NULL) {
 		depth->create(*device, openni::SENSOR_DEPTH);
 		set_maxres(*depth);				
@@ -68,6 +64,14 @@ void init_openni_device(const char *uri, openni::Device *device, openni::VideoSt
 	}
 }
 
+static void set_cropping(openni::VideoStream *s) {
+	int w = s->getVideoMode().getResolutionX();
+	int h = s->getVideoMode().getResolutionY();
+	int cx = w*100/20;	
+	int cy = h*100/20;
+	s->setCropping(cx, cy, w-2*cx, h-cy);
+}
+
 void init_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color) {
 	openni::Status rc = openni::OpenNI::initialize();
 	if(rc != openni::STATUS_OK)	{
@@ -76,6 +80,14 @@ void init_openni(openni::Device *device, openni::VideoStream *depth, openni::Vid
 	}
 	
 	init_openni_device(openni::ANY_DEVICE, device, depth, color);
+	
+	if(device->isImageRegistrationModeSupported(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR))	
+		device->setImageRegistrationMode(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR);
+	else
+		printf("OpenNI Warning: depth to image registration not supported by device!\nColor values will appear shifted.\n");
+	
+	set_cropping(color);
+	set_cropping(depth);
 }
 
 void set_maxres(openni::VideoStream &stream) {
