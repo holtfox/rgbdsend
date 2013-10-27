@@ -1,10 +1,11 @@
 #include <cerrno>
 #include <cstring>
+#include <cstdlib>
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <time.h>
+#include <ctime>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
@@ -104,8 +105,15 @@ void Daemon::init(int port, int timeout) {
 	name.sin_addr.s_addr = htonl(INADDR_ANY);
 	name.sin_port = htons(port);
 	
-	bind(this->sock, (sockaddr *)&name, sizeof(name));
-	listen(this->sock, 2);
+	if(bind(this->sock, (sockaddr *)&name, sizeof(name)) == -1) {
+		printf("Daemon Error: Failed to bind socket: %s\n", strerror(errno));
+		exit(1);
+	}
+	
+	if(listen(this->sock, 2) == -1) {
+		printf("Daemon Error: Failed to listen on port %d: %s\n", port, strerror(errno));
+		exit(1);
+	}
 	
 	this->timeout = timeout;
 	
