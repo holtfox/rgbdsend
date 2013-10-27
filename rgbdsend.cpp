@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
 	openni::Status rc;
 		
 	char *prefix = strrchr(argv[0], '/')+1;
-	char *cfgfile = new char[prefix-argv[0]+sizeof(rgbdsend::config_file_name)+1];
+	char *cfgfile = new char[prefix-argv[0]+strlen(rgbdsend::config_file_name)+1];
 	
 	strncpy(cfgfile, argv[0], prefix-argv[0]+1);
 	strcpy(cfgfile+(prefix-argv[0]), rgbdsend::config_file_name);
