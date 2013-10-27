@@ -276,9 +276,9 @@ int capture_thumbnail(unsigned char **thumbbuf, long unsigned int *memsize, open
 	return 1;
 }
 
-void cleanup_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color) {
-	depth->destroy();
-	color->destroy();
-	device->close();
+void cleanup_openni(openni::Device &device, openni::VideoStream &depth, openni::VideoStream &color) {
+	depth.destroy();
+	color.destroy();
+	device.close();
 	openni::OpenNI::shutdown();
 }

@@ -111,9 +111,19 @@ void process_onis(std::queue<char *> &filelist, CURL *curl, Config &conf) {
 	
 	printf("Done processing.\n");
 }
-		
+
+static openni::Device __device; // have to be global to be reachable by atexit().
+static openni::VideoStream __depth, __color;
+
+static void atexit_handler() {
+	printf("Closing devices.\n");
+	cleanup_openni(__device, __depth, __color);
+	printf("Terminating.\n");
+}
+
 int main(int argc, char **argv) {
-	openni::Device device;	
+	openni::Device &device = __device;
+	openni::VideoStream &depth = __depth, &color = __color;
 	openni::Status rc;
 		
 	char *prefix = strrchr(argv[0], '/')+1;
@@ -135,7 +145,7 @@ int main(int argc, char **argv) {
 	Daemon daemon;
 	daemon.init(conf.daemon_port, conf.daemon_timeout);
 		
-	openni::VideoStream depth, color;
+	atexit(atexit_handler);
 	
 	init_openni(&device, &depth, &color, conf);
 	
