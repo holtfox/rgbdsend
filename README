@@ -11,8 +11,15 @@ server on command.
 
 2 Building
 
-rgbdsend requires libcurl and OpenNI2. Install the dependencies and follow
-these steps to build it:
+rgbdsend requires libcurl, libjpeg and OpenNI2 and cmake as the build system.
+
+$ apt-get install libcurl4-openssl-dev libjpeg-dev cmake
+
+OpenNI2 doesn't have packages on most distributions, so it has to be installed
+manually. (See appendix A for further instructions).
+
+After you have installed the dependencies, change to the rgbdsend source
+directory and follow these steps to build it:
 
 $ mkdir build
 $ cd build
@@ -24,7 +31,7 @@ This will create the rgbdsend executable in your current directory. To read the
 destination server information, rgbdsend needs a config file in the same
 directory as the executable. An example file is included with the source.
 
-$ mv ../config.example config
+$ cp ../config.example config
 
 
 
@@ -131,3 +138,87 @@ A data block is prefixed by an unsigned 4-byte big-endian integer specifying the
 length of the following data in bytes. The data may be any form of binary data.
 A data block may only follow command headers which are defined to have one
 (4.1.1).
+
+
+
+Appendix A: Installing OpenNI2
+
+OpenNI2 has not been packaged by most common distributors. For Raspberry Pi,
+there are no prebuilt binaries at all. Therefore, installing it requires some
+manual work. Further instructions on building and installing it are provided
+here.
+
+It is recommended to install OpenNI2 in a local directory because it doesn't
+comply with the POSIX directory structure. The following guides will install it
+that way.
+
+
+A.1 Installation on a PC
+
+Installing OpenNI2 on a normal x86 or x86_64 PC with Linux is rather straight-
+forward. You can download the OpenNI2 SDK from
+http://www.openni.org/openni-sdk/. Version 2.2 is the most recent version at the
+time of writing, but future versions should also work with rgbdsend. So choose
+whatever is the most recent version there.
+
+The file you'll get is a tar.bz2 archive (redundantly) packed in a zip archive.
+
+$ unzip OpenNI-Linux-x64-2.2.tar.zip
+$ tar -xf OpenNI-Linux-x64-2.2.tar.bz2
+
+Now you have to install it by executing a script in the directory you just
+unpacked. The script needs root permission and will install some udev rules as
+well as creating the file OpenNIDevEnvironment in that directory, which will be
+needed later.
+
+$ cd OpenNI-Linux-x64-2.2
+$ sudo ./install.sh
+
+Now everything is ready to build rgbdsend.
+
+
+A.2 Installation on a Raspberry Pi
+
+On the Raspberry Pi, getting OpenNI2 to work is a bit more complicated. First of
+all, you cannot use the ARM packages from the OpenNI website. Those were built
+for Android and will not work on your Pi.
+	
+Instead, you have to build it yourself. So you need to download the OpenNI2
+source code from the project's github repository
+(https://github.com/OpenNI/OpenNI2).
+
+To create executables suitable for the Raspberry Pi, you need either to build
+them on the Pi itself or using a cross compiler.
+
+Setting up a working cross compiler is lots of complicated work, so the
+recommended solution in this guide is to build it either on the Pi itself or
+in a Raspberry Pi VM (works well with qemu. google "raspberry pi vm").
+Compiling it this way (especially on a real Pi) will take a long time, but at
+least you get something that's guaranteed to work.
+
+Time to start compiling. But before that, there are some modifications we have
+to make, because much like the ARM builds on the website, OpenNI's arm build
+system isn't targeted towards Raspberry Pis.
+
+In file "ThirdParty/PSCommon/BuildSystem/Plattform.Arm" change
+
+CFLAGS += -march=armv7-a -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
+	#-mcpu=cortex-a8
+to
+CFLAGS += -mtune=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard
+
+In file "Redist/ReleaseVersion.py" in line 88 change
+
+return str(cores * 2)
+to
+return "1"
+
+After you did these changes, you are ready to build. Change back to the main
+directory and run
+
+$ PLATFORM=Arm make
+$ cd Packaging
+$ ./ReleaseVersion.py arm 2.2
+
+After this step is finally done, you will get a OpenNI-Linux-Arm-2.2.tar.bz2.
+Now you can proceed in the same way as the PC instructions.
