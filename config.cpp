@@ -2,6 +2,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cerrno>
+#include <cmath>
 
 #include "config.h"
 
@@ -25,6 +26,7 @@ void Config::setDefaults(void ) {
 	crop_right = 0;
 	crop_top = 0;
 	crop_bottom = 0;
+	capture_max_depth = INFINITY;
 	
 	daemon_port = 11222;
 	daemon_timeout = 3;
@@ -49,6 +51,11 @@ static void conf_intval(char *str, void *dest) {
 	*d = atoi(str);
 }
 
+static void conf_floatval(char *str, void *dest) {
+	float *d = (float *)dest;
+	*d = atof(str);
+}
+
 int Config::read(char *filename) {
 	char buf[512];
 	int buflen;
@@ -69,7 +76,8 @@ int Config::read(char *filename) {
 		{"crop_left", &this->crop_left, conf_intval},
 		{"crop_right", &this->crop_right, conf_intval},
 		{"crop_top", &this->crop_top, conf_intval},
-		{"crop_bottom", &this->crop_bottom, conf_intval}},
+		{"crop_bottom", &this->crop_bottom, conf_intval},
+		{"max_depth", &this->capture_max_depth, conf_floatval}},
 	  conf_section_daemon[] = {
 		{"port", &this->daemon_port, conf_intval},
 		{"timeout", &this->daemon_timeout, conf_intval}

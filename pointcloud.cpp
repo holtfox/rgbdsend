@@ -6,28 +6,28 @@
 #include "capture.h"
 
 PointCloud::PointCloud(int num) {
-	this->num = num;
+	num = num;
 	
-	this->x = new float[num];
-	this->y = new float[num];
-	this->z = new float[num];
-	this->r = new uint8_t[num];
-	this->g = new uint8_t[num];
-	this->b = new uint8_t[num];
+	x = new float[num];
+	y = new float[num];
+	z = new float[num];
+	r = new uint8_t[num];
+	g = new uint8_t[num];
+	b = new uint8_t[num];
 		
 }
 
 PointCloud::~PointCloud() {
-	delete[] this->x;
-	delete[] this->y;
-	delete[] this->z;
-	delete[] this->r;
-	delete[] this->g;
-	delete[] this->b;	
+	delete[] x;
+	delete[] y;
+	delete[] z;
+	delete[] r;
+	delete[] g;
+	delete[] b;	
 }
 
 
-void depth_to_pointcloud(PointCloud &cloud, RawData &raw, openni::VideoStream &depthstrm, openni::VideoStream &clrstrm) {
+void depth_to_pointcloud(PointCloud &cloud, RawData &raw, openni::VideoStream &depthstrm, openni::VideoStream &clrstrm, float maxdepth) {
 	int x, y;
 	
 	float avgdepth;
@@ -41,7 +41,10 @@ void depth_to_pointcloud(PointCloud &cloud, RawData &raw, openni::VideoStream &d
 				continue;
 			
 			avgdepth = raw.d[x+y*raw.dresx]/(float)raw.dframenums[x+y*raw.dresx];
-							
+			
+			if(avgdepth > maxdepth*1000.f)
+				continue;
+			
 			openni::CoordinateConverter::convertDepthToWorld(depthstrm, (float)x, (float)y, avgdepth, &cloud.x[i], &cloud.y[i], &cloud.z[i]);
 			
 			int cx = x/(float)raw.dresx*raw.cresx;

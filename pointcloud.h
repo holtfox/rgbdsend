@@ -25,7 +25,7 @@ public:
 	int num;
 };
 
-void depth_to_pointcloud(PointCloud &cloud, RawData &raw, openni::VideoStream &depthstrm, openni::VideoStream &clrstrm);
+void depth_to_pointcloud(PointCloud &cloud, RawData &raw, openni::VideoStream &depthstrm, openni::VideoStream &clrstrm, float maxdepth);
 
 void export_to_ply(char *filename, PointCloud &c);
 

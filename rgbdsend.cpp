@@ -38,7 +38,7 @@ void record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::
 	printf("Captured ONI to '%s'\n", tmpfile);
 }
 
-void oni_to_pointcloud(char *tmpfile) {
+void oni_to_pointcloud(char *tmpfile, Config &conf) {
 	openni::Device onidev;
 	openni::VideoStream depth, color;
 	
@@ -76,7 +76,7 @@ void oni_to_pointcloud(char *tmpfile) {
 	printf("Recording ended.\n");
 		
 	PointCloud cloud(raw.dresx*raw.dresy);
-	depth_to_pointcloud(cloud, raw, depth, color);
+	depth_to_pointcloud(cloud, raw, depth, color, conf.capture_max_depth);
 	export_to_ply(tmpfile, cloud);
 	
 	printf("\nExtracted to point cloud: %s\n", tmpfile);
@@ -91,7 +91,7 @@ void process_onis(std::queue<char *> &filelist, CURL *curl, Config &conf) {
 	
 	while(!filelist.empty()) {
 		printf("%s\n", filelist.front());
-		oni_to_pointcloud(filelist.front());		
+		oni_to_pointcloud(filelist.front(), conf);		
 		
 		if(conf.dest_url && conf.dest_username && conf.dest_password)
 			send_file(curl, filelist.front(), conf.dest_url, conf.dest_username, conf.dest_password);

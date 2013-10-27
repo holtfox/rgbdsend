@@ -27,6 +27,11 @@ crop_right 20
 crop_top 20
 crop_bottom 0
 
+# max_depth sets the maximal depth of pixels to be included in the point clouds
+# in meters. By default it's infinity.
+
+max_depth INF
+
 [Daemon]
 # This section sets the server properties of the remote control daemon.
 
