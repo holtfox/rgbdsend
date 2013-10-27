@@ -40,11 +40,11 @@ RawData::~RawData() {
 	delete[] this->dframenums;
 }
 
-void init_openni_device(const char *uri, openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color) {
+bool init_openni_device(const char *uri, openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color) {
 	openni::Status rc = device->open(uri);
 	if(rc != openni::STATUS_OK) {
 		printf("OpenNI: Couldn't open device\n%s", openni::OpenNI::getExtendedError());
-		exit(2);
+		return false;
 	}
 	
 		
@@ -53,7 +53,7 @@ void init_openni_device(const char *uri, openni::Device *device, openni::VideoSt
 		set_maxres(*depth);				
 	} else {
 		printf("OpenNI: Couldn't create depth stream\n%s", openni::OpenNI::getExtendedError());		
-		exit(1);
+		return false;
 	}
 
 	if(device->getSensorInfo(openni::SENSOR_COLOR) != NULL) {
@@ -61,8 +61,10 @@ void init_openni_device(const char *uri, openni::Device *device, openni::VideoSt
 		set_closestres(*color, depth->getVideoMode());			
 	} else {
 		printf("OpenNI: Couldn't create color stream\n%s", openni::OpenNI::getExtendedError());
-		exit(1);
+		return false;
 	}
+	
+	return true;
 }
 
 static void set_cropping(openni::VideoStream *s, int r, int l, int t, int b) {
@@ -82,7 +84,8 @@ void init_openni(openni::Device *device, openni::VideoStream *depth, openni::Vid
 		exit(1);
 	}
 	
-	init_openni_device(openni::ANY_DEVICE, device, depth, color);
+	if(!init_openni_device(openni::ANY_DEVICE, device, depth, color))
+		exit(1);
 	
 	if(device->isImageRegistrationModeSupported(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR))	
 		device->setImageRegistrationMode(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR);

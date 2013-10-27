@@ -13,7 +13,7 @@
 #include "network.h"
 #include "config.h"
 
-void record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::VideoStream &color, Config &conf) {
+bool record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::VideoStream &color, Config &conf) {
 	openni::Recorder recorder;
 		
 	time_t t = time(NULL);
@@ -21,7 +21,12 @@ void record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::
 	printf("Starting ONI Capture.\n");
 	depth.start();
 	color.start();
-	recorder.create(tmpfile);
+	openni::Status rc = recorder.create(tmpfile);	
+	if(rc != openni::STATUS_OK) {
+		printf("Error: Failed to open '%s' for writing!\n%s", tmpfile, openni::OpenNI::getExtendedError());
+		return false;
+	}
+	
 	recorder.attach(color);
 	recorder.attach(depth);
 	recorder.start();
@@ -36,13 +41,17 @@ void record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::
 	recorder.destroy();
 	
 	printf("Captured ONI to '%s'\n", tmpfile);
+	
+	return true;
 }
 
 void oni_to_pointcloud(char *tmpfile, Config &conf) {
 	openni::Device onidev;
 	openni::VideoStream depth, color;
 	
-	init_openni_device(tmpfile, &onidev, &depth, &color);
+	if(!init_openni_device(tmpfile, &onidev, &depth, &color)) {
+		return;
+	}
 		
 	int fnlen = strlen(tmpfile);
 	tmpfile[fnlen-3] = 'p';
@@ -200,11 +209,13 @@ int main(int argc, char **argv) {
 									
 			if(strncmp(cmd.header, "capt", 4) == 0) {
 				printf("Received capture command.\n");
-				onilist.push(new char[rgbdsend::filename_bufsize]);
 				
-				record_oni(onilist.back(), rgbdsend::filename_bufsize, depth, color, conf);
-				//record_pointcloud(tmpfile, sizeof(tmpfile), depth, color, conf);
-							
+				char *newfile = new char[rgbdsend::filename_bufsize];
+				if(record_oni(newfile, rgbdsend::filename_bufsize, depth, color, conf) == true) {
+					onilist.push(newfile);
+				} else {
+					delete[] newfile;
+				}
 				daemon.sendCommand("okay", 0, 0);
 			} else if(strncmp(cmd.header, "thmb", 4) == 0) {
 				printf("Received thumbnail command.\n");
