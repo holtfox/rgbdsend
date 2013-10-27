@@ -17,6 +17,16 @@ password s3cr3t
 
 capture_time 2000
 
+# the crop option set the sensor-side cropping options. All values integers
+# from 0 to 100 representing the percentage of the total width/height to be
+# cropped from that side. Note that the resulting frame size must be bigger than
+# 128x128 pixels. This is a hardware limitation of most sensors.
+
+crop_left 20
+crop_right 20
+crop_top 20
+crop_bottom 0
+
 [Daemon]
 # This section sets the server properties of the remote control daemon.
 

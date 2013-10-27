@@ -19,6 +19,10 @@ public:
 	char *dest_password;
 	
 	int capture_time;
+	int crop_left;
+	int crop_right;
+	int crop_top;
+	int crop_bottom;
 	
 	int daemon_port;
 	int daemon_timeout;

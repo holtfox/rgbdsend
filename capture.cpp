@@ -6,6 +6,7 @@
 
 #include "capture.h"
 #include "rgbdsend.h"
+#include "config.h"
 
 RawData::RawData(int dresx, int dresy, int cresx, int cresy) {
 	this->dresx = dresx;
@@ -64,15 +65,17 @@ void init_openni_device(const char *uri, openni::Device *device, openni::VideoSt
 	}
 }
 
-static void set_cropping(openni::VideoStream *s) {
+static void set_cropping(openni::VideoStream *s, int r, int l, int t, int b) {
 	int w = s->getVideoMode().getResolutionX();
 	int h = s->getVideoMode().getResolutionY();
-	int cx = w*20/100;	
-	int cy = h*20/100;
-	s->setCropping(cx, cy, w-2*cx, h-cy);
+	int cl = w*r/100;
+	int cr = w*l/100;
+	int ct = h*t/100;
+	int cb = h*b/100;
+	s->setCropping(cl, ct, w-cl-cr, h-ct-cb);
 }
 
-void init_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color) {
+void init_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color, Config &conf) {
 	openni::Status rc = openni::OpenNI::initialize();
 	if(rc != openni::STATUS_OK)	{
 		printf("OpenNI: Initialize failed\n%s", openni::OpenNI::getExtendedError());
@@ -86,8 +89,8 @@ void init_openni(openni::Device *device, openni::VideoStream *depth, openni::Vid
 	else
 		printf("OpenNI Warning: depth to image registration not supported by device!\nColor values will appear shifted.\n");
 	
-	set_cropping(color);
-	set_cropping(depth);
+	set_cropping(color, conf.crop_left, conf.crop_right, conf.crop_top, conf.crop_bottom);
+	set_cropping(depth, conf.crop_left, conf.crop_right, conf.crop_top, conf.crop_bottom);
 }
 
 void set_maxres(openni::VideoStream &stream) {

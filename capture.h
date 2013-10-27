@@ -7,6 +7,8 @@ namespace openni {
 	class Device;
 };
 
+class Config;
+
 class RawData {
 public:
 	RawData(int dresx, int dresy, int cresx, int cresy);
@@ -32,7 +34,7 @@ public:
 };
 
 void init_openni_device(const char *dev, openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color);
-void init_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color);
+void init_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color, Config &conf);
 void set_maxres(openni::VideoStream &stream);
 void set_closestres(openni::VideoStream &stream, const openni::VideoMode &target);
 void read_frame(openni::VideoFrameRef &frame, RawData &data);

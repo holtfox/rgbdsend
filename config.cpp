@@ -12,24 +12,28 @@ Config::Config() {
 }
 
 void Config::setDefaults(void ) {
-	delete[] this->dest_url;
-	delete[] this->dest_username;
-	delete[] this->dest_password;
+	delete[] dest_url;
+	delete[] dest_username;
+	delete[] dest_password;
 	
-	this->dest_url = NULL;
-	this->dest_username = NULL;
-	this->dest_password = NULL;
+	dest_url = NULL;
+	dest_username = NULL;
+	dest_password = NULL;
 	
-	this->capture_time = 2000;
+	capture_time = 2000;
+	crop_left = 0;
+	crop_right = 0;
+	crop_top = 0;
+	crop_bottom = 0;
 	
-	this->daemon_port = 11222;
-	this->daemon_timeout = 3;
+	daemon_port = 11222;
+	daemon_timeout = 3;
 }
 
 Config::~Config() {
-	delete[] this->dest_url;
-	delete[] this->dest_username;
-	delete[] this->dest_password;
+	delete[] dest_url;
+	delete[] dest_username;
+	delete[] dest_password;
 }
 
 static void conf_strval(char *str, void *dest) {
@@ -61,7 +65,11 @@ int Config::read(char *filename) {
 		{"username", &this->dest_username, conf_strval},
 		{"password", &this->dest_password, conf_strval}},
 	  conf_section_capture[] = {
-		{"capture_time", &this->capture_time, conf_intval}},
+		{"capture_time", &this->capture_time, conf_intval},
+		{"crop_left", &this->crop_left, conf_intval},
+		{"crop_right", &this->crop_right, conf_intval},
+		{"crop_top", &this->crop_top, conf_intval},
+		{"crop_bottom", &this->crop_bottom, conf_intval}},
 	  conf_section_daemon[] = {
 		{"port", &this->daemon_port, conf_intval},
 		{"timeout", &this->daemon_timeout, conf_intval}

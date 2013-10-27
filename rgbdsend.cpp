@@ -137,11 +137,24 @@ int main(int argc, char **argv) {
 		
 	openni::VideoStream depth, color;
 	
-	init_openni(&device, &depth, &color);
+	init_openni(&device, &depth, &color, conf);
+	
+	int dw, dh, cw, ch;
+	int tmp1, tmp2;
+	
+	if(!depth.getCropping(&tmp1, &tmp2, &dw, &dh)) {
+		dw = depth.getVideoMode().getResolutionX();
+		dh = depth.getVideoMode().getResolutionY();
+	}
+	
+	if(!color.getCropping(&tmp1, &tmp2, &cw, &ch)) {
+		cw = color.getVideoMode().getResolutionX();
+		ch = color.getVideoMode().getResolutionY();
+	}
 	
 	printf("Resolution:\nDepth: %dx%d @ %d fps\nColor: %dx%d @ %d fps\n",
-		   depth.getVideoMode().getResolutionX(), depth.getVideoMode().getResolutionY(), depth.getVideoMode().getFps(),
-		   color.getVideoMode().getResolutionX(), color.getVideoMode().getResolutionY(), color.getVideoMode().getFps());
+		   dw, dh, depth.getVideoMode().getFps(),
+		   cw, ch, color.getVideoMode().getFps());
 	
 	std::queue<char *> onilist;
 	
