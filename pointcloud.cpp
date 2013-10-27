@@ -45,13 +45,13 @@ void depth_to_pointcloud(PointCloud &cloud, RawData &raw, openni::VideoStream &d
 			if(avgdepth > maxdepth*1000.f)
 				continue;
 			
-			openni::CoordinateConverter::convertDepthToWorld(depthstrm, (float)x, (float)y, avgdepth, &cloud.x[i], &cloud.y[i], &cloud.z[i]);
+			int doffx = 0, doffy = 0, tmp1, tmp2;
+			depthstrm.getCropping(&doffx, &doffy, &tmp1, &tmp2);
 			
-			int coffx = 0, coffy = 0, tmp1, tmp2;
-			clrstrm.getCropping(&coffx, &coffy, &tmp1, &tmp2);
-			
-			int cx = x/(float)raw.dresx*raw.cresx-coffx;
-			int cy = y/(float)raw.dresy*raw.cresy-coffy;
+			openni::CoordinateConverter::convertDepthToWorld(depthstrm, (float)(x+doffx), (float)(y+doffy), avgdepth, &cloud.x[i], &cloud.y[i], &cloud.z[i]);
+						
+			int cx = x/(float)raw.dresx*raw.cresx;
+			int cy = y/(float)raw.dresy*raw.cresy;
 			
 			if(cx >= raw.cresx)
 				cx--;
