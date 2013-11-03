@@ -70,8 +70,8 @@ bool init_openni_device(const char *uri, openni::Device *device, openni::VideoSt
 static void set_cropping(openni::VideoStream *s, int r, int l, int t, int b) {
 	int w = s->getVideoMode().getResolutionX();
 	int h = s->getVideoMode().getResolutionY();
-	int cl = w*r/100;
-	int cr = w*l/100;
+	int cl = w*l/100;
+	int cr = w*r/100;
 	int ct = h*t/100;
 	int cb = h*b/100;
 	s->setCropping(cl, ct, w-cl-cr, h-ct-cb);
@@ -149,7 +149,7 @@ void read_frame(openni::VideoFrameRef &frame, RawData &data) {
 		depthpix = (openni::DepthPixel*)frame.getData();
 		for(y = 0; y < data.dresy; y++) {
 			for(x = 0; x < data.dresx; x++) {
-				int idx = x+data.dresx*y;
+				int idx = x+frame.getStrideInBytes()*y;
 				
 				float curavg = data.d[idx]/(float)data.dframenums[idx];
 				

@@ -31,8 +31,6 @@ void depth_to_pointcloud(PointCloud &cloud, RawData &raw, openni::VideoStream &d
 	int x, y;
 	
 	float avgdepth;
-	int clrx;
-	int clry;
 	int i = 0;
 	
 	for(y = 0; y < raw.dresy; y++) {
@@ -52,6 +50,9 @@ void depth_to_pointcloud(PointCloud &cloud, RawData &raw, openni::VideoStream &d
 						
 			int cx = x/(float)raw.dresx*raw.cresx;
 			int cy = y/(float)raw.dresy*raw.cresy;
+			
+			printf("%d/%dx%d/%d\n", raw.dresx, raw.cresx, raw.dresy, raw.cresy);
+			
 			
 			if(cx >= raw.cresx)
 				cx--;
