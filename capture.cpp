@@ -149,7 +149,7 @@ void read_frame(openni::VideoFrameRef &frame, RawData &data) {
 		depthpix = (openni::DepthPixel*)frame.getData();
 		for(y = 0; y < data.dresy; y++) {
 			for(x = 0; x < data.dresx; x++) {
-				int idx = x+frame.getStrideInBytes()*y;
+				int idx = x+data.dresx*y;
 				
 				float curavg = data.d[idx]/(float)data.dframenums[idx];
 				
