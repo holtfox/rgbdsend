@@ -75,21 +75,25 @@ void oni_to_pointcloud(char *tmpfile, Config &conf) {
 	
 	RawData raw(dw, dh, cw, ch);
 			
-	printf("Recording started.\n");
+// 	printf("Recording started.\n");
 	
 	openni::VideoStream* streams[] = {&depth, &color};
 	int framecounts[] = {onidev.getPlaybackControl()->getNumberOfFrames(depth),
 						 onidev.getPlaybackControl()->getNumberOfFrames(color)};
-	capture(streams, 2, raw, framecounts);
+						 
+	if(framecounts[0] == 0 && framecounts[1] == 0) {
+		printf("Error: ONI didn't contain any frames.\n");
+	} else {
+		capture(streams, 2, raw, framecounts);
+			
+	// 	printf("Recording ended.\n");
+			
+		PointCloud cloud(raw.dresx*raw.dresy);
+		depth_to_pointcloud(cloud, raw, depth, color, conf.capture_max_depth);
+		export_to_ply(tmpfile, cloud);
 		
-	printf("Recording ended.\n");
-		
-	PointCloud cloud(raw.dresx*raw.dresy);
-	depth_to_pointcloud(cloud, raw, depth, color, conf.capture_max_depth);
-	export_to_ply(tmpfile, cloud);
-	
-	printf("\nExtracted to point cloud: %s\n", tmpfile);
-	
+		printf("\nExtracted to point cloud: %s\n", tmpfile);
+	}
 	depth.destroy();
 	color.destroy();
 	onidev.close();
