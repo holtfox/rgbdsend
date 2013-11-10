@@ -121,7 +121,7 @@ void set_maxres(openni::VideoStream &stream) {
 void set_closestres(openni::VideoStream &stream, const openni::VideoMode &target) {
 	const openni::Array<openni::VideoMode> &modes = stream.getSensorInfo().getSupportedVideoModes();
 	int mode = 0;
-	int min = 1<<16;
+	int min = 65536;
 	
 	for(int i = 0; i < modes.getSize(); i++) {
 		int dx = target.getResolutionX()-modes[i].getResolutionX();
@@ -208,7 +208,7 @@ int capture(openni::VideoStream **streams, int streamcount, RawData &raw, unsign
 			reftime = frame.getTimestamp();
 			reftimeset = true;
 		} else if(interval > 0 && readyStream == 0 && frame.getTimestamp()-reftime >= interval*1000) {			
-			printf("Capture interval complete. (%lu > %u)\n", (unsigned long)(frame.getTimestamp()-reftime), interval);
+			printf("Capture interval complete. (%lu > %u)\n", (unsigned long)(frame.getTimestamp()-reftime), interval*1000);
 			return 0;
 		}
 		
