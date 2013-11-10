@@ -16,6 +16,7 @@ password s3cr3t
 # frames from the sensor per shot. More time means more accurate models.
 
 capture_time 2000
+capture_interval 1000
 
 # the crop option set the sensor-side cropping options. All values integers
 # from 0 to 100 representing the percentage of the total width/height to be

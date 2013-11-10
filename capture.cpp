@@ -74,7 +74,11 @@ static void set_cropping(openni::VideoStream *s, int r, int l, int t, int b) {
 	int cr = w*r/100;
 	int ct = h*t/100;
 	int cb = h*b/100;
-	s->setCropping(cl, ct, w-cl-cr, h-ct-cb);
+	
+	if(s->setCropping(cl, ct, w-cl-cr, h-ct-cb) != openni::STATUS_OK) {
+		printf("OpenNI: Couldn't set cropping.\n");
+		exit(1);
+	}
 }
 
 void init_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color, Config &conf) {
@@ -184,50 +188,26 @@ void read_frame(openni::VideoFrameRef &frame, RawData &data) {
 	}	
 }
 
-void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int *framecounts) {
+int capture(openni::VideoStream **streams, int streamcount, RawData &raw, unsigned long endtimestamp) {
 	openni::VideoFrameRef frame;
 	openni::Status rc;
-	
-	int *framestotake = new int[streamcount];
-	
-	for(int i = 0; i < streamcount; i++) {
-		streams[i]->start();
-		framestotake[i] = framecounts[i];
-		printf("take %d frames from stream %d\n", framestotake[i], i);
-	}
-	
-	int sc = streamcount;
-	
-	while(sc) {
+			
+	while(true) {
 		int readyStream = -1;
-		rc = openni::OpenNI::waitForAnyStream(streams, sc, &readyStream, rgbdsend::read_wait_timeout);
+		rc = openni::OpenNI::waitForAnyStream(streams, streamcount, &readyStream, rgbdsend::read_wait_timeout);
 		if (rc != openni::STATUS_OK) {
-			printf("\nONI file was read.\n");
-			break;
+			printf("ONI file was read.\n");
+			return -1;
 		}
 		
 		streams[readyStream]->readFrame(&frame);
-		read_frame(frame, raw);
-// 		if(framestotake[readyStream] > 0) {
-// 			streams[readyStream]->readFrame(&frame);
-// 			framestotake[readyStream]--;
-// 			read_frame(frame, raw);
-// 			
-// 			if(framestotake[readyStream] == 0) {
-// 				streams[readyStream]->stop();
-// 				
-// 				sc--;
-// 				streams[readyStream] = streams[sc];
-// 				framestotake[readyStream] = framestotake[sc];
-// 				printf("\n");
-// 			}			
-// 		}
+		if(frame.getTimestamp() >= endtimestamp) {
+			printf("Capture interval complete.\n");
+			return 0;
+		}
 		
-// 		printf("\rframes left: ");
-// 		for(int i = 0; i < sc; i++)
-// 			printf("%d ", framestotake[i]);	
+		read_frame(frame, raw);
 	}
-	printf("\n");	
 }
 
 int capture_thumbnail(unsigned char **thumbbuf, long unsigned int *memsize, openni::VideoStream &color) {

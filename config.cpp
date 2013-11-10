@@ -22,6 +22,7 @@ void Config::setDefaults(void ) {
 	dest_password = NULL;
 	
 	capture_time = 2000;
+	capture_interval = -1;
 	crop_left = 0;
 	crop_right = 0;
 	crop_top = 0;
@@ -29,7 +30,7 @@ void Config::setDefaults(void ) {
 	capture_max_depth = INFINITY;
 	
 	daemon_port = 11222;
-	daemon_timeout = 3;
+	daemon_timeout = 5;
 }
 
 Config::~Config() {
@@ -73,6 +74,7 @@ int Config::read(char *filename) {
 		{"password", &this->dest_password, conf_strval}},
 	  conf_section_capture[] = {
 		{"capture_time", &this->capture_time, conf_intval},
+		{"capture_interval", &this->capture_interval, conf_intval},
 		{"crop_left", &this->crop_left, conf_intval},
 		{"crop_right", &this->crop_right, conf_intval},
 		{"crop_top", &this->crop_top, conf_intval},

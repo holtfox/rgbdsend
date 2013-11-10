@@ -19,6 +19,7 @@ public:
 	char *dest_password;
 	
 	int capture_time;
+	int capture_interval;
 	float capture_max_depth;
 	int crop_left;
 	int crop_right;
