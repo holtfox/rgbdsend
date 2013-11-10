@@ -87,20 +87,20 @@ void oni_to_pointcloud(char *onifile, Config &conf) {
 		depth.start();
 		depth.readFrame(&test);
 		depth.stop();
-		unsigned long referencetime = test.getTimestamp();
+		unsigned long long referencetime = test.getTimestamp();
 		
-		int i = 1;
+		unsigned int i = 1;
 		int rc;
 		
 		// switch off series mode if the interval is negative. +1000 to be very sure.
-		int interval = conf.capture_interval > 0 ? conf.capture_interval : conf.capture_time+1000;
+		unsigned long long interval = conf.capture_interval > 0 ? conf.capture_interval : conf.capture_time+1000;
 		
 		do {			
 			depth.start();
 			color.start();
 			RawData raw = RawData(dw, dh, cw, ch);
 						
-			rc = capture(streams, 2, raw, referencetime+conf.capture_interval*i);
+			rc = capture(streams, 2, raw, referencetime+interval*i);
 						
 			color.stop();
 			depth.stop();
