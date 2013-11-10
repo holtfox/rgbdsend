@@ -45,7 +45,7 @@ bool record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::
 	return true;
 }
 
-int oni_to_pointcloud(char *onifile, Config &conf) {
+int oni_to_pointcloud(std::queue<char *> &outfiles, char *onifile, Config &conf) {
 	openni::Device onidev;
 	openni::VideoStream depth, color;
 	
@@ -103,13 +103,13 @@ int oni_to_pointcloud(char *onifile, Config &conf) {
 			
 			sprintf(outfile+fnlen-4, "_%02d.ply", i);
 			export_to_ply(outfile, cloud);
-		
+			
+			outfiles.push(outfile);
 			printf("\nExtracted interval %d to point cloud: %s\n", i, outfile);
 			i++;
 		} while(rc != -1);		
 	}
 	
-	delete[] outfile;
 	depth.destroy();
 	color.destroy();
 	onidev.close();
@@ -123,7 +123,9 @@ void process_onis(std::queue<char *> &filelist, CURL *curl, Config &conf) {
 	
 	while(!filelist.empty()) {
 		printf("%s\n", filelist.front());
-		int n = oni_to_pointcloud(filelist.front(), conf);		
+		std::queue<char *> plys;
+		
+		int n = oni_to_pointcloud(plys, filelist.front(), conf);		
 		int fnlen = strlen(filelist.front());
 		
 		if(fnlen+4 > rgbdsend::filename_bufsize) {
@@ -133,13 +135,14 @@ void process_onis(std::queue<char *> &filelist, CURL *curl, Config &conf) {
 		
 		remove(filelist.front());
 		
-		for(int i = 0; i < n; i++) {
-			sprintf(filelist.front()+fnlen-4, "_%02d.ply", i);
-		
+		while(!plys.empty()) {
 			if(conf.dest_url && conf.dest_username && conf.dest_password)
-				send_file(curl, filelist.front(), conf.dest_url, conf.dest_username, conf.dest_password);
+				send_file(curl, plys.front(), conf.dest_url, conf.dest_username, conf.dest_password);
 			else
 				printf("No destination server specified. Skipping transfer.\n");
+			
+			delete[] plys.front();
+			plys.pop();
 		}		
 		
 		delete[] filelist.front();
