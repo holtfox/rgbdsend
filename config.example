@@ -38,4 +38,4 @@ max_depth INF
 
 port 11222
 # connection timeout in seconds
-timeout 3
+timeout 6
