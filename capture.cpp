@@ -15,29 +15,29 @@ RawData::RawData(int dresx, int dresy, int cresx, int cresy) {
 	this->cresx = cresx;
 	this->cresy = cresy;
 	
-	this->r = new int[cresx*cresy];
-	this->g = new int[cresx*cresy];
-	this->b = new int[cresx*cresy];
+	r = new int[cresx*cresy];
+	g = new int[cresx*cresy];
+	b = new int[cresx*cresy];
 	
-	this->d = new long[dresx*dresy];
-	this->dframenums = new int[dresx*dresy];
+	d = new long[dresx*dresy];
+	dframenums = new int[dresx*dresy];
 	
-	memset(this->r, 0, sizeof(int)*cresx*cresy);
-	memset(this->g, 0, sizeof(int)*cresx*cresy);
-	memset(this->b, 0, sizeof(int)*cresx*cresy);
+	memset(r, 0, sizeof(int)*cresx*cresy);
+	memset(g, 0, sizeof(int)*cresx*cresy);
+	memset(b, 0, sizeof(int)*cresx*cresy);
 	
-	memset(this->d, 0, sizeof(long)*dresx*dresy);
-	memset(this->dframenums, 0, sizeof(int)*dresx*dresy);
+	memset(d, 0, sizeof(long)*dresx*dresy);
+	memset(dframenums, 0, sizeof(int)*dresx*dresy);
 		
-	this->cframenum = 0;
+	cframenum = 0;
 }
 
 RawData::~RawData() {
-	delete[] this->r;
-	delete[] this->g;
-	delete[] this->b;
-	delete[] this->d;
-	delete[] this->dframenums;
+	delete[] r;
+	delete[] g;
+	delete[] b;
+	delete[] d;
+	delete[] dframenums;
 }
 
 bool init_openni_device(const char *uri, openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color) {
