@@ -133,21 +133,18 @@ void process_onis(std::queue<char *> &filelist, CURL *curl, Config &conf) {
 			exit(1);
 		}
 		
-		
-		
-		if(conf.dest_url && conf.dest_username && conf.dest_password) {
-			while(!plys.empty()) {
-				send_file(curl, plys.front(), conf.dest_url, conf.dest_username, conf.dest_password);
-			
-			
-				delete[] plys.front();
-				plys.pop();
-			}
-		} else {
-			printf("No destination server specified. Skipping transfer.\n");	
-		}
-		
 		remove(filelist.front());
+		
+		while(!plys.empty()) {
+			if(conf.dest_url && conf.dest_username && conf.dest_password)
+				send_file(curl, plys.front(), conf.dest_url, conf.dest_username, conf.dest_password);
+			else
+				printf("No destination server specified. Skipping transfer.\n");
+			
+			delete[] plys.front();
+			plys.pop();
+		}		
+		
 		delete[] filelist.front();
 		filelist.pop();
 	}
