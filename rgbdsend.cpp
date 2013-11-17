@@ -45,7 +45,7 @@ bool record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::
 	return true;
 }
 
-int oni_to_pointcloud(std::queue<char *> &plys, char *onifile, Config &conf) {
+int oni_to_pointcloud(std::queue<char *> *outfiles, char *onifile, Config &conf) {
 	openni::Device onidev;
 	openni::VideoStream depth, color;
 	
@@ -53,8 +53,11 @@ int oni_to_pointcloud(std::queue<char *> &plys, char *onifile, Config &conf) {
 		return 0;
 	}
 	
-	int fnlen = strlen(onifile);	
-			
+	int fnlen = strlen(onifile);
+	
+	char *outfile = new char [fnlen+4];
+	strcpy(outfile,onifile);
+		
 	onidev.getPlaybackControl()->setRepeatEnabled(false);
 	
 	int dw, dh, cw, ch;
@@ -79,15 +82,14 @@ int oni_to_pointcloud(std::queue<char *> &plys, char *onifile, Config &conf) {
 						 
 	if(framecounts[0] == 0 && framecounts[1] == 0) {
 		printf("Error: ONI didn't contain any frames.\n");
-	} else {		
+	} else {
+		openni::VideoFrameRef test;
+		
 		printf("%d depth frames\n%d color frames\n", framecounts[0], framecounts[1]);		
 		
 		i = 1;
 		int rc;		
-		do {
-			char *outfile = new char [rgbdsend::filename_bufsize];
-			strcpy(outfile,onifile);
-			
+		do {			
 			depth.start();
 			color.start();
 			RawData raw = RawData(dw, dh, cw, ch);
@@ -102,7 +104,7 @@ int oni_to_pointcloud(std::queue<char *> &plys, char *onifile, Config &conf) {
 			sprintf(outfile+fnlen-4, "_%02d.ply", i);
 			export_to_ply(outfile, cloud);
 			
-			plys.push(outfile);
+			outfiles->push(outfile);
 			printf("\nExtracted interval %d to point cloud: %s\n", i, outfile);
 			i++;
 		} while(rc != -1);		
@@ -123,7 +125,15 @@ void process_onis(std::queue<char *> &filelist, CURL *curl, Config &conf) {
 		printf("%s\n", filelist.front());
 		std::queue<char *> plys;
 		
-		int n = oni_to_pointcloud(plys, filelist.front(), conf);		
+		int n = oni_to_pointcloud(&plys, filelist.front(), conf);		
+		int fnlen = strlen(filelist.front());
+		
+		if(fnlen+4 > rgbdsend::filename_bufsize) {
+			printf("Fatal Error: filename buffer size not high enough. Should not happen.\n");
+			exit(1);
+		}
+		
+		
 		
 		if(conf.dest_url && conf.dest_username && conf.dest_password) {
 			while(!plys.empty()) {
