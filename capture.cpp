@@ -74,7 +74,11 @@ static void set_cropping(openni::VideoStream *s, int r, int l, int t, int b) {
 	int cr = w*r/100;
 	int ct = h*t/100;
 	int cb = h*b/100;
-	s->setCropping(cl, ct, w-cl-cr, h-ct-cb);
+	
+	if(s->setCropping(cl, ct, w-cl-cr, h-ct-cb) != openni::STATUS_OK) {
+		printf("OpenNI Error: Invalid cropping parameters!\n");
+		exit(1);
+	}
 }
 
 void init_openni(openni::Device *device, openni::VideoStream *depth, openni::VideoStream *color, Config &conf) {
