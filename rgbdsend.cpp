@@ -85,12 +85,12 @@ int oni_to_pointcloud(std::queue<char *> &plys, char *onifile, Config &conf) {
 		i = 1;
 		int rc;		
 		do {
-			char *outfile = new char[rgbdsend::filename_bufsize];
+			char *outfile = new char [rgbdsend::filename_bufsize];
 			strcpy(outfile,onifile);
 			
 			depth.start();
 			color.start();
-			RawData raw(dw, dh, cw, ch);
+			RawData raw = RawData(dw, dh, cw, ch);
 						
 			rc = capture(streams, 2, raw, conf.capture_interval);
 						
@@ -125,16 +125,14 @@ void process_onis(std::queue<char *> &filelist, CURL *curl, Config &conf) {
 		
 		int n = oni_to_pointcloud(plys, filelist.front(), conf);		
 		
-		
-		while(!plys.empty()) {
-			if(conf.dest_url && conf.dest_username && conf.dest_password)
+		if(conf.dest_url && conf.dest_username && conf.dest_password) {
+			while(!plys.empty()) {
 				send_file(curl, plys.front(), conf.dest_url, conf.dest_username, conf.dest_password);
-					
-			delete[] plys.front();
-			plys.pop();
-		}
-		
-		if(!conf.dest_url || !conf.dest_username || !conf.dest_password) {
+						
+				delete[] plys.front();
+				plys.pop();
+			}
+		} else {
 			printf("No destination server specified. Skipping transfer.\n");	
 		}
 		

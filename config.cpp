@@ -30,7 +30,7 @@ void Config::setDefaults(void ) {
 	capture_max_depth = INFINITY;
 	
 	daemon_port = 11222;
-	daemon_timeout = 6;
+	daemon_timeout = 5;
 }
 
 Config::~Config() {
