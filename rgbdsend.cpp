@@ -45,12 +45,12 @@ bool record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::
 	return true;
 }
 
-int oni_to_pointcloud(char *onifile, Config &conf) {
+void oni_to_pointcloud(char *onifile, Config &conf) {
 	openni::Device onidev;
 	openni::VideoStream depth, color;
 	
 	if(!init_openni_device(onifile, &onidev, &depth, &color)) {
-		return 0;
+		return;
 	}
 	
 	int fnlen = strlen(onifile);
@@ -75,26 +75,34 @@ int oni_to_pointcloud(char *onifile, Config &conf) {
 			
 	openni::VideoStream* streams[] = {&depth, &color};
 	
-	int framecounts[] = {onidev.getPlaybackControl()->getNumberOfFrames(depth),
+	int framecounts[] = {onidev.getPlaybackControl()->getNumberOfFrames(depth)-1,
 						 onidev.getPlaybackControl()->getNumberOfFrames(color)};
 	
-	int i = 0;
-						 
 	if(framecounts[0] == 0 && framecounts[1] == 0) {
 		printf("Error: ONI didn't contain any frames.\n");
 	} else {
 		openni::VideoFrameRef test;
 		
 		printf("%d depth frames\n%d color frames\n", framecounts[0], framecounts[1]);		
+		depth.start();
 		
-		i = 1;
-		int rc;		
+		openni::OpenNI::waitForAnyStream(streams, 1, &tmp1, rgbdsend::read_wait_timeout);
+		depth.readFrame(&test);
+		depth.stop();
+		unsigned long referencetime = test.getTimestamp();
+		
+		unsigned int i = 1;
+		int rc;
+		
+		// switch off series mode if the interval is negative. +1000 to be very sure.
+		unsigned long interval = conf.capture_interval > 0 ? conf.capture_interval : conf.capture_time+1000;
+		
 		do {			
 			depth.start();
 			color.start();
 			RawData raw = RawData(dw, dh, cw, ch);
 						
-			rc = capture(streams, 2, raw, conf.capture_interval);
+			rc = capture(streams, 2, raw, referencetime+interval*i);
 						
 			color.stop();
 			depth.stop();
@@ -113,34 +121,26 @@ int oni_to_pointcloud(char *onifile, Config &conf) {
 	depth.destroy();
 	color.destroy();
 	onidev.close();
-	
-	return i-1;
 }
 
 void process_onis(std::queue<char *> &filelist, CURL *curl, Config &conf) {
 	printf("Started processing captured onis...\n");
 	
-	
 	while(!filelist.empty()) {
 		printf("%s\n", filelist.front());
-		int n = oni_to_pointcloud(filelist.front(), conf);		
-		int fnlen = strlen(filelist.front());
+		oni_to_pointcloud(filelist.front(), conf);		
 		
-		if(fnlen+4 > rgbdsend::filename_bufsize) {
-			printf("Fatal Error: filename buffer size not high enough. Should not happen.\n");
-			exit(1);
-		}
+		if(conf.dest_url && conf.dest_username && conf.dest_password)
+			send_file(curl, filelist.front(), conf.dest_url, conf.dest_username, conf.dest_password);
+		else
+			printf("No destination server specified. Skipping transfer.\n");
+		
+		char *p = strrchr(filelist.front(), '.');
+		p[1] = 'o';
+		p[2] = 'n';
+		p[3] = 'i';
 		
 		remove(filelist.front());
-		
-		for(int i = 0; i < n; i++) {
-			sprintf(filelist.front()+fnlen-4, "_%02d.ply", i);
-		
-			if(conf.dest_url && conf.dest_username && conf.dest_password)
-				send_file(curl, filelist.front(), conf.dest_url, conf.dest_username, conf.dest_password);
-			else
-				printf("No destination server specified. Skipping transfer.\n");
-		}		
 		
 		delete[] filelist.front();
 		filelist.pop();
