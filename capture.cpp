@@ -197,9 +197,9 @@ int capture(openni::VideoStream **streams, int streamcount, RawData &raw, unsign
 	
 	while(true) {
 		int readyStream = -1;
-		rc = openni::OpenNI::waitForAnyStream(streams, streamcount, &readyStream, rgbdsend::read_wait_timeout/10);
+		rc = openni::OpenNI::waitForAnyStream(streams, streamcount, &readyStream, rgbdsend::read_wait_timeout);
 		if (rc != openni::STATUS_OK) {
-			printf("ONI file end reached.\n");
+			printf("ONI file was read.\n");
 			return -1;
 		}
 		

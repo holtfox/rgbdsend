@@ -45,7 +45,7 @@ bool record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::
 	return true;
 }
 
-int oni_to_pointcloud(std::queue<char *> *outfiles, char *onifile, Config &conf) {
+int oni_to_pointcloud(std::queue<char *> &outfiles, char *onifile, Config &conf) {
 	openni::Device onidev;
 	openni::VideoStream depth, color;
 	
@@ -104,7 +104,7 @@ int oni_to_pointcloud(std::queue<char *> *outfiles, char *onifile, Config &conf)
 			sprintf(outfile+fnlen-4, "_%02d.ply", i);
 			export_to_ply(outfile, cloud);
 			
-			outfiles->push(outfile);
+			outfiles.push(outfile);
 			printf("\nExtracted interval %d to point cloud: %s\n", i, outfile);
 			i++;
 		} while(rc != -1);		
@@ -125,7 +125,7 @@ void process_onis(std::queue<char *> &filelist, CURL *curl, Config &conf) {
 		printf("%s\n", filelist.front());
 		std::queue<char *> plys;
 		
-		int n = oni_to_pointcloud(&plys, filelist.front(), conf);		
+		int n = oni_to_pointcloud(plys, filelist.front(), conf);		
 		int fnlen = strlen(filelist.front());
 		
 		if(fnlen+4 > rgbdsend::filename_bufsize) {
