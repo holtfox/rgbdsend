@@ -207,8 +207,8 @@ int capture(openni::VideoStream **streams, int streamcount, RawData &raw, unsign
 		if(!reftimeset) {
 			reftime = frame.getTimestamp();
 			reftimeset = true;
-		} else if(interval > 0 && frame.getTimestamp() > reftime && frame.getTimestamp()-reftime >= interval) {			
-			printf("Capture interval complete. (%lu > %u)\n", (unsigned long)(frame.getTimestamp()-reftime), interval);
+		} else if(interval > 0 && frame.getTimestamp()-reftime >= reftime) {
+			printf("Capture interval complete. (%lu > %u)\n", frame.getTimestamp()-reftime, interval);
 			return 0;
 		}
 		
