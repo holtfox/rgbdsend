@@ -32,7 +32,7 @@ bool record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::
 	recorder.start();
 	
 	int starttime = clock();
-	while(clock()-starttime < conf.capture_time*CLOCKS_PER_SEC/1000.)
+	while(clock()-starttime < conf.capture_time*CLOCKS_PER_SEC/1000)
 		usleep(100);
 	
 	recorder.stop();
@@ -45,19 +45,19 @@ bool record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::
 	return true;
 }
 
-void oni_to_pointcloud(char *onifile, Config &conf) {
+void oni_to_pointcloud(char *tmpfile, Config &conf) {
 	openni::Device onidev;
 	openni::VideoStream depth, color;
 	
-	if(!init_openni_device(onifile, &onidev, &depth, &color)) {
+	if(!init_openni_device(tmpfile, &onidev, &depth, &color)) {
 		return;
 	}
-	
-	int fnlen = strlen(onifile);
-	
-	char *outfile = new char [fnlen+3];
-	strcpy(outfile,onifile);
 		
+	int fnlen = strlen(tmpfile);
+	tmpfile[fnlen-3] = 'p';
+	tmpfile[fnlen-2] = 'l';
+	tmpfile[fnlen-1] = 'y';
+	
 	onidev.getPlaybackControl()->setRepeatEnabled(false);
 	
 	int dw, dh, cw, ch;
@@ -72,44 +72,28 @@ void oni_to_pointcloud(char *onifile, Config &conf) {
 		cw = color.getVideoMode().getResolutionX();
 		ch = color.getVideoMode().getResolutionY();
 	}
+	
+	RawData raw(dw, dh, cw, ch);
 			
+// 	printf("Recording started.\n");
+	
 	openni::VideoStream* streams[] = {&depth, &color};
-	
-	int framecounts[] = {onidev.getPlaybackControl()->getNumberOfFrames(depth)-1,
+	int framecounts[] = {onidev.getPlaybackControl()->getNumberOfFrames(depth),
 						 onidev.getPlaybackControl()->getNumberOfFrames(color)};
-	
+						 
 	if(framecounts[0] == 0 && framecounts[1] == 0) {
 		printf("Error: ONI didn't contain any frames.\n");
 	} else {
-		openni::VideoFrameRef test;
-		
-		printf("%d depth frames\n%d color frames\n", framecounts[0], framecounts[1]);		
-		depth.start();
-		depth.readFrame(&test);
-		depth.stop();
-		unsigned long referencetime = test.getTimestamp();
-		
-		int i = 1;
-		int rc;
-		do {			
-			depth.start();
-			color.start();
-			RawData raw = RawData(dw, dh, cw, ch);
-			rc = capture(streams, 2, raw, referencetime+conf.capture_interval*i);
-						
-			color.stop();
-			depth.stop();
-			PointCloud cloud(raw.dresx*raw.dresy);
-			depth_to_pointcloud(cloud, raw, depth, color, conf.capture_max_depth);
+		capture(streams, 2, raw, framecounts);
 			
-			sprintf(outfile+fnlen-4, "_%02d.ply", i);
-			export_to_ply(outfile, cloud);
+	// 	printf("Recording ended.\n");
+			
+		PointCloud cloud(raw.dresx*raw.dresy);
+		depth_to_pointcloud(cloud, raw, depth, color, conf.capture_max_depth);
+		export_to_ply(tmpfile, cloud);
 		
-			printf("Extracted interval %d to point cloud: %s\n", i, outfile);
-			i++;
-		} while(rc != -1);		
+		printf("\nExtracted to point cloud: %s\n", tmpfile);
 	}
-		
 	depth.destroy();
 	color.destroy();
 	onidev.close();
