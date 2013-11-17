@@ -31,9 +31,14 @@ bool record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::
 	recorder.attach(depth);
 	recorder.start();
 	
-	int starttime = clock();
-	while(clock()-starttime < conf.capture_time*CLOCKS_PER_SEC/1000)
+	struct timespec	start, tp;
+	clock_gettime(CLOCK_MONOTONIC, &start);
+	do {
 		usleep(100);
+		clock_gettime(CLOCK_MONOTONIC, &tp);
+		long t = (tp.tv_sec-start.tv_sec)*1000+(tp.tv_nsec-start.tv_nsec)/1000000;
+	} while(t < conf.capture_time);
+		
 	
 	recorder.stop();
 	color.stop();
