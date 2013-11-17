@@ -91,15 +91,10 @@ void oni_to_pointcloud(char *onifile, Config &conf) {
 		
 		int i = 1;
 		int rc;
-		
-		// switch off series mode if the interval is negative. +1000 to be very sure.
-		int interval = conf.capture_interval > 0 ? conf.capture_interval : conf.capture_time+1000;
-		
 		do {			
 			depth.start();
 			color.start();
 			RawData raw = RawData(dw, dh, cw, ch);
-						
 			rc = capture(streams, 2, raw, referencetime+conf.capture_interval*i);
 						
 			color.stop();
@@ -110,7 +105,7 @@ void oni_to_pointcloud(char *onifile, Config &conf) {
 			sprintf(outfile+fnlen-4, "_%02d.ply", i);
 			export_to_ply(outfile, cloud);
 		
-			printf("\nExtracted interval %d to point cloud: %s\n", i, outfile);
+			printf("Extracted interval %d to point cloud: %s\n", i, outfile);
 			i++;
 		} while(rc != -1);		
 	}
