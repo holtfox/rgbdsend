@@ -55,7 +55,7 @@ int oni_to_pointcloud(std::queue<char *> &outfiles, char *onifile, Config &conf)
 	
 	int fnlen = strlen(onifile);
 	
-	char *outfile = new char [fnlen+4];
+	char *outfile = new char [fnlen+3];
 	strcpy(outfile,onifile);
 		
 	onidev.getPlaybackControl()->setRepeatEnabled(false);
@@ -138,7 +138,8 @@ void process_onis(std::queue<char *> &filelist, CURL *curl, Config &conf) {
 		if(conf.dest_url && conf.dest_username && conf.dest_password) {
 			while(!plys.empty()) {
 				send_file(curl, plys.front(), conf.dest_url, conf.dest_username, conf.dest_password);
-						
+			
+			
 				delete[] plys.front();
 				plys.pop();
 			}
