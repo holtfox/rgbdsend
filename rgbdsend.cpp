@@ -85,17 +85,15 @@ void oni_to_pointcloud(char *onifile, Config &conf) {
 		
 		printf("%d depth frames\n%d color frames\n", framecounts[0], framecounts[1]);		
 		depth.start();
-		
-		openni::OpenNI::waitForAnyStream(streams, 1, &tmp1, rgbdsend::read_wait_timeout);
 		depth.readFrame(&test);
 		depth.stop();
-		unsigned long referencetime = test.getTimestamp();
+		unsigned long long referencetime = test.getTimestamp();
 		
 		unsigned int i = 1;
 		int rc;
 		
 		// switch off series mode if the interval is negative. +1000 to be very sure.
-		unsigned long interval = conf.capture_interval > 0 ? conf.capture_interval : conf.capture_time+1000;
+		unsigned long long interval = conf.capture_interval > 0 ? conf.capture_interval : conf.capture_time+1000;
 		
 		do {			
 			depth.start();
@@ -116,8 +114,7 @@ void oni_to_pointcloud(char *onifile, Config &conf) {
 			i++;
 		} while(rc != -1);		
 	}
-	
-	delete[] outfile;
+		
 	depth.destroy();
 	color.destroy();
 	onidev.close();

@@ -188,7 +188,7 @@ void read_frame(openni::VideoFrameRef &frame, RawData &data) {
 	}	
 }
 
-int capture(openni::VideoStream **streams, int streamcount, RawData &raw, unsigned long endtimestamp) {
+int capture(openni::VideoStream **streams, int streamcount, RawData &raw, unsigned long long endtimestamp) {
 	openni::VideoFrameRef frame;
 	openni::Status rc;
 			
@@ -202,7 +202,7 @@ int capture(openni::VideoStream **streams, int streamcount, RawData &raw, unsign
 		
 		streams[readyStream]->readFrame(&frame);
 		if(frame.getTimestamp() >= endtimestamp) {
-			printf("Capture interval complete. (%lu > %lu)\n", frame.getTimestamp(), endtimestamp);
+			printf("Capture interval complete. (%llu > %llu)\n", frame.getTimestamp(), endtimestamp);
 			return 0;
 		}
 		
