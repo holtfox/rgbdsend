@@ -33,11 +33,13 @@ bool record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::
 	
 	struct timespec	start, tp;
 	clock_gettime(CLOCK_MONOTONIC, &start);
+	
+	long tt;
 	do {
 		usleep(100);
 		clock_gettime(CLOCK_MONOTONIC, &tp);
-		long t = (tp.tv_sec-start.tv_sec)*1000+(tp.tv_nsec-start.tv_nsec)/1000000;
-	} while(t < conf.capture_time);
+		tt = (tp.tv_sec-start.tv_sec)*1000+(tp.tv_nsec-start.tv_nsec)/1000000;
+	} while(tt < conf.capture_time);
 		
 	
 	recorder.stop();
