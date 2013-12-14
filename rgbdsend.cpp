@@ -17,7 +17,9 @@ bool record_oni(char *tmpfile, int bufsize, openni::VideoStream &depth, openni::
 	openni::Recorder recorder;
 		
 	time_t t = time(NULL);
-	strftime(tmpfile, bufsize, "rgbd_%Y%m%d_%H-%M-%S.oni", localtime(&t));
+	strftime(tmpfile, bufsize, "rgbd_%Y%m%d_%H-%M-%S_", localtime(&t));
+	strncat(tmpfile, getenv("HOSTNAME"), bufsize);
+	strncat(tmpfile, ".oni", bufsize);
 	printf("Starting ONI Capture.\n");
 	depth.start();
 	color.start();
