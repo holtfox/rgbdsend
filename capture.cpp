@@ -169,19 +169,21 @@ void read_frame(openni::VideoFrameRef &frame, RawData &data) {
 		}
 		break;
 	case openni::PIXEL_FORMAT_RGB888:
-		clrpix = (openni::RGB888Pixel*)frame.getData();
-		for(y = 0; y < data.cresy; y++) {
-			for(x = 0; x < data.cresx; x++) {
-				int idx = x+data.cresx*y;
-				
-				data.r[idx] += clrpix[idx].r;
-				data.g[idx] += clrpix[idx].g;
-				data.b[idx] += clrpix[idx].b;			
-				
+		if(data.cframenum < 1) {
+			clrpix = (openni::RGB888Pixel*)frame.getData();
+			for(y = 0; y < data.cresy; y++) {
+				for(x = 0; x < data.cresx; x++) {
+					int idx = x+data.cresx*y;
+					
+					data.r[idx] += clrpix[idx].r;
+					data.g[idx] += clrpix[idx].g;
+					data.b[idx] += clrpix[idx].b;			
+					
+				}
 			}
-		}
 		
-		data.cframenum++;
+			data.cframenum++;
+		}
 		break;
 	default:
 		printf("Unknown format\n");
