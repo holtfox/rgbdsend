@@ -237,7 +237,7 @@ int main(int argc, char **argv) {
 				
 				daemon.sendCommand("stmb", thumbbuf, size);
 				
-//				delete[] thumbbuf;
+//				delete[] thumbbuf; seems like libjpeg handles this. but I'm not sure.
 			} else if(strncmp(cmd.header, "quit", 4) == 0) {
 				daemon.closeConnection();
 			} else {

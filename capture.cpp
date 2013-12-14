@@ -231,6 +231,10 @@ void capture(openni::VideoStream **streams, int streamcount, RawData &raw, int *
 // 		for(int i = 0; i < sc; i++)
 // 			printf("%d ", framestotake[i]);	
 	}
+	
+	for(int i = 0; i < streamcount; i++) {
+		streams[i]->stop();
+	}
 	printf("\n");	
 }
 
